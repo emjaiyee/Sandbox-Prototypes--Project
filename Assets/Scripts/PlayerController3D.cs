@@ -20,6 +20,7 @@ public class PlayerController3D : MonoBehaviour
         Vector2 inputVector = moveAction.ReadValue<Vector2>();
 
         // Line used to convert input into movement direction.
+        // Also converts 2D inputs into 3D inputs.
         Vector3 moveDir = transform.right * inputVector.x + transform.forward * inputVector.y;
 
         // Velocity is deprecated. Use linearVelocity instead.
@@ -30,6 +31,7 @@ public class PlayerController3D : MonoBehaviour
     void Update()
     {
         // New input system, calls the specific input action. It's the new GetKeyDown.
+        // It's also apparently frame-rate dependent. 
         if (jumpAction.WasPressedThisFrame())
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
