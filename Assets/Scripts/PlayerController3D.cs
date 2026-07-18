@@ -1,25 +1,47 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerController3D : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed = 5f;
     private Rigidbody rb;
+    public InputAction moveAction;
+    public InputAction jumpAction;
+    public float moveSpeed = 7f;
+    public float jumpForce = 5f;
 
-
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        Debug.Log("Script Initialized");
         rb = GetComponent<Rigidbody>();
     }
 
-    // Update is called once per frame
+    void FixedUpdate() 
+    {
+        Vector2 inputVector = moveAction.ReadValue<Vector2>();
+
+        Vector3 moveDir = transform.right * inputVector.x + transform.forward * inputVector.y;
+
+        rb.linearVelocity = new Vector3(moveDir.x * moveSpeed, rb.linearVelocity.y, moveDir.z * moveSpeed);
+    }
+
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (jumpAction.WasPressedThisFrame())
         {
-            Debug.Log("Spacebar Pressed!");
-            rb.AddForce(Vector3.forward * moveSpeed, ForceMode.Impulse);
+            rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
-    }   
+    }
+
+    void OnEnable()
+    {
+        moveAction.Enable();
+        jumpAction.Enable();
+    }
+
+    void OnDisable()
+    {
+        moveAction.Disable();
+        jumpAction.Disable();
+    }
+
+
 }
