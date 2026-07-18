@@ -700,7 +700,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d1e5089d67d79084988eb5c299f67558, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerController3D
-  moveSpeed: 5
+  moveAction:
+    m_Name: Move
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 1a34b2d3-069f-45c0-b399-504873ff9950
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  jumpAction:
+    m_Name: Jump
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: 600fdff7-c974-42ed-8d61-df2222f4a0d1
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings: []
+    m_Flags: 0
+  moveSpeed: 7
+  jumpForce: 5
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
