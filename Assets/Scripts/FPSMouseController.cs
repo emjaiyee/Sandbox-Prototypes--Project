@@ -13,6 +13,7 @@ public class FPSMouseController : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        //Cursor locking logic.
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
 
@@ -27,11 +28,14 @@ public class FPSMouseController : MonoBehaviour
     {
         Vector2 mouseInput = lookAction.ReadValue<Vector2>();
 
+        // Apply mouse movement to x & y
         float mouseX = mouseInput.x * mouseSensitivity * Time.deltaTime;
         float mouseY = mouseInput.y * mouseSensitivity * Time.deltaTime;
 
+        // Prevents mouse from inverting in y 
         xRotation -= mouseY;
 
+        // Clamp 
         xRotation = Mathf.Clamp(xRotation, -90, 90);
 
         transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
