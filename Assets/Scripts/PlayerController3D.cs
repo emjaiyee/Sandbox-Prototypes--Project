@@ -70,16 +70,4 @@ public class PlayerController3D : MonoBehaviour
         isGrounded = Physics.CheckSphere(spherePosition, sphereRadius, groundLayer);
     }
 
-    void OnDrawGizmosSelected()
-{
-    // Highlights green if grounded, red if airborne
-    Gizmos.color = isGrounded ? Color.green : Color.red;
-    
-    // Calculates the exact same position point used in your logic
-    Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - 1f, transform.position.z);
-    
-    // Draws the sphere in the Scene view
-    Gizmos.DrawWireSphere(spherePosition, sphereRadius);
-}
-
 }
