@@ -9,6 +9,12 @@ public class PlayerController3D : MonoBehaviour
     public float moveSpeed = 7f;
     public float jumpForce = 5f;
 
+    [Header ("Ground Check")]
+    [SerializeField] private LayerMask groundLayer;
+    [SerializeField] private float groundCheckDistance = 0.2f;
+    [SerializeField] private float sphereRadius = 0.3f;
+    private bool isGrounded = true;
+
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -30,9 +36,12 @@ public class PlayerController3D : MonoBehaviour
 
     void Update()
     {
+
+        CheckGroundStatus();
+
         // New input system, calls the specific input action. It's the new GetKeyDown.
         // It's also apparently frame-rate dependent. 
-        if (jumpAction.WasPressedThisFrame())
+        if (jumpAction.WasPressedThisFrame() && isGrounded )
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
         }
@@ -55,5 +64,22 @@ public class PlayerController3D : MonoBehaviour
         jumpAction.Disable();
     }
 
+    void CheckGroundStatus()
+    {
+        Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - 1f, transform.position.z);
+        isGrounded = Physics.CheckSphere(spherePosition, sphereRadius, groundLayer);
+    }
+
+    void OnDrawGizmosSelected()
+{
+    // Highlights green if grounded, red if airborne
+    Gizmos.color = isGrounded ? Color.green : Color.red;
+    
+    // Calculates the exact same position point used in your logic
+    Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - 1f, transform.position.z);
+    
+    // Draws the sphere in the Scene view
+    Gizmos.DrawWireSphere(spherePosition, sphereRadius);
+}
 
 }
