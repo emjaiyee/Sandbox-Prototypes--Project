@@ -36,11 +36,12 @@ public class PlayerController3D : MonoBehaviour
 
     void Update()
     {
-
+        // Don't forget do check ground status per frame.
         CheckGroundStatus();
 
         // New input system, calls the specific input action. It's the new GetKeyDown.
         // It's also apparently frame-rate dependent. 
+        // And if isGrounded is also true.
         if (jumpAction.WasPressedThisFrame() && isGrounded )
         {
             rb.AddForce(Vector3.up * jumpForce, ForceMode.Impulse);
@@ -66,7 +67,10 @@ public class PlayerController3D : MonoBehaviour
 
     void CheckGroundStatus()
     {
+        // Simple sphere offset.
         Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - 1f, transform.position.z);
+
+        // Sphere check if in contact with groundLayer.
         isGrounded = Physics.CheckSphere(spherePosition, sphereRadius, groundLayer);
     }
 
