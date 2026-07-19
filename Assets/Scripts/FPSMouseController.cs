@@ -8,10 +8,18 @@ public class FPSMouseController : MonoBehaviour
     [SerializeField] Transform playerBody;
     private float xRotation = 0f;
 
+    private Rigidbody bodyRigidbody;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
-        
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+
+        if (playerBody != null)
+        {
+            bodyRigidbody = playerBody.GetComponent<Rigidbody>();
+        }
     }
 
     // Update is called once per frame
@@ -28,10 +36,12 @@ public class FPSMouseController : MonoBehaviour
 
         transform.localRotation = Quaternion.Euler(xRotation, 0f, 0f);
 
-        playerBody.Rotate(Vector3.up * mouseX);
+        if (bodyRigidbody != null)
+        {
+            Quaternion deltaRotation = Quaternion.Euler(Vector3.up * mouseX);
 
-
-
+            bodyRigidbody.MoveRotation(bodyRigidbody.rotation * deltaRotation);
+        }
 
     }
 
