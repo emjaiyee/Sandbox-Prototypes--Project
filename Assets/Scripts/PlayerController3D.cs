@@ -74,4 +74,12 @@ public class PlayerController3D : MonoBehaviour
         isGrounded = Physics.CheckSphere(spherePosition, sphereRadius, groundLayer);
     }
 
+    void OnDrawGizmosSelected()
+    {
+        // Draws a sphere gizmo to visualize the ground check.
+        Gizmos.color = Color.red;
+        Vector3 spherePosition = new Vector3(transform.position.x, transform.position.y - 1f, transform.position.z);
+        Gizmos.DrawWireSphere(spherePosition, sphereRadius);
+    }
+
 }
