@@ -36,8 +36,8 @@ public class FPSMouseController : MonoBehaviour
         // Clamps the vertical rotation to prevent flipping.
         rotation.y = Mathf.Clamp(rotation.y, -yRotationLimit, yRotationLimit);
 
-        smoothTime = Mathf.Lerp(smoothTime, 0.1f, Time.deltaTime * 5f);
-
+        // Smoothly interpolates the rotation for a more fluid camera movement.
+        // Applies the rotation to the camera and player body.
         transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.Euler(-rotation.y, 0f, 0f), smoothTime);
         playerBody.localRotation = Quaternion.Euler(0f, rotation.x, 0f);
     }
