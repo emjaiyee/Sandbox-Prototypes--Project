@@ -1,3 +1,6 @@
+// First Person Mouse Controller script for Unity using the new Input System.
+// Attach this script to the camera object in your scene. Make sure to set the playerBody reference to the player's body (usually the parent object of the camera) in the inspector.
+
 using UnityEngine;
 using UnityEngine.InputSystem;
 
@@ -9,6 +12,7 @@ public class FPSMouseController : MonoBehaviour
 
     [SerializeField] private float smoothTime = 0.1f;
 
+    // Reference to the player's body for horizontal rotation.
     [SerializeField] private Transform playerBody;
 
     Vector2 rotation = Vector2.zero;
