@@ -7,6 +7,8 @@ public class FPSMouseController : MonoBehaviour
     [Range(0.1f, 9f)][SerializeField] private float sensitivity = 2f;
     [SerializeField] private float yRotationLimit = 88f;
 
+    [SerializeField] private float smoothTime = 0.1f;
+
     [SerializeField] private Transform playerBody;
 
     Vector2 rotation = Vector2.zero;
@@ -34,9 +36,9 @@ public class FPSMouseController : MonoBehaviour
         // Clamps the vertical rotation to prevent flipping.
         rotation.y = Mathf.Clamp(rotation.y, -yRotationLimit, yRotationLimit);
 
+        smoothTime = Mathf.Lerp(smoothTime, 0.1f, Time.deltaTime * 5f);
 
-        // Applies the rotation to the camera and player body.
-        transform.localRotation = Quaternion.Euler(-rotation.y, 0f, 0f);
+        transform.localRotation = Quaternion.Lerp(transform.localRotation, Quaternion.Euler(-rotation.y, 0f, 0f), smoothTime);
         playerBody.localRotation = Quaternion.Euler(0f, rotation.x, 0f);
     }
 
