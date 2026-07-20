@@ -3,29 +3,50 @@ using UnityEngine.InputSystem;
 
 public class FPSMouseController : MonoBehaviour
 {
+    [SerializeField] private InputAction mouseLookAction;
     [Range(0.1f, 9f)][SerializeField] private float sensitivity = 2f;
     [SerializeField] private float yRotationLimit = 88f;
+
+    [SerializeField] private Transform playerBody;
 
     Vector2 rotation = Vector2.zero;
     const string xAxis = "Mouse X";
     const string yAxis = "Mouse Y";
 
+
     void Start()
     {
+
+        // Locks the cursor to the center of the screen and makes it invisible.
         Cursor.lockState = CursorLockMode.Locked;
         Cursor.visible = false;
     }
 
     void Update()
     {
-        rotation.x += Input.GetAxis(xAxis) * sensitivity;
-        rotation.y += Input.GetAxis(yAxis) * sensitivity;
 
+        Vector2 mouseInput = mouseLookAction.ReadValue<Vector2>();
+
+        // Adjusts the rotation based on mouse input and sensitivity.
+        rotation.x += mouseInput.x * sensitivity;
+        rotation.y += mouseInput.y * sensitivity;
+
+        // Clamps the vertical rotation to prevent flipping.
         rotation.y = Mathf.Clamp(rotation.y, -yRotationLimit, yRotationLimit);
 
-        var xQuaternion = Quaternion.AngleAxis(rotation.x, Vector3.up);
-        var yQuaternion = Quaternion.AngleAxis(rotation.y, Vector3.left);
 
-        transform.localRotation = xQuaternion * yQuaternion;
+        // Applies the rotation to the camera and player body.
+        transform.localRotation = Quaternion.Euler(-rotation.y, 0f, 0f);
+        playerBody.localRotation = Quaternion.Euler(0f, rotation.x, 0f);
+    }
+
+    void OnEnable()
+    {
+        mouseLookAction.Enable();
+    }
+
+    void OnDisable()
+    {
+        mouseLookAction.Disable();
     }
 }
