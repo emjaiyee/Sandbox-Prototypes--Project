@@ -19,6 +19,8 @@ public class FPSMouseController : MonoBehaviour
     const string xAxis = "Mouse X";
     const string yAxis = "Mouse Y";
 
+    // 
+
 
     void Start()
     {

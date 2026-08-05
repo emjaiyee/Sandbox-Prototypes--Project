@@ -131,7 +131,7 @@ GameObject:
   - component: {fileID: 224094117}
   - component: {fileID: 224094116}
   - component: {fileID: 224094115}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Ground
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -244,6 +244,7 @@ GameObject:
   - component: {fileID: 330585545}
   - component: {fileID: 330585544}
   - component: {fileID: 330585547}
+  - component: {fileID: 330585548}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -369,6 +370,39 @@ MonoBehaviour:
     m_VarianceClampScale: 0.9
     m_ContrastAdaptiveSharpening: 0
   m_Version: 2
+--- !u!114 &330585548
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 330585543}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 80859a3e82021e843bc8b3304fdd54c2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FPSMouseController
+  mouseLookAction:
+    m_Name: Mouse Look
+    m_Type: 0
+    m_ExpectedControlType: 
+    m_Id: deb06207-ecd8-49e9-a1dd-4192672d0a60
+    m_Processors: 
+    m_Interactions: 
+    m_SingletonActionBindings:
+    - m_Name: 
+      m_Id: b70cdbe6-d326-412e-893d-d43c93233b12
+      m_Path: <Mouse>/delta
+      m_Interactions: 
+      m_Processors: 
+      m_Groups: 
+      m_Action: Mouse Look
+      m_Flags: 0
+    m_Flags: 0
+  sensitivity: 0.24
+  yRotationLimit: 88
+  smoothTime: 0.1
+  playerBody: {fileID: 1680729846}
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -559,7 +593,6 @@ GameObject:
   - component: {fileID: 1680729843}
   - component: {fileID: 1680729848}
   - component: {fileID: 1680729849}
-  - component: {fileID: 1680729850}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -775,37 +808,6 @@ MonoBehaviour:
     m_Bits: 8
   groundCheckDistance: 0.2
   sphereRadius: 0.3
---- !u!114 &1680729850
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1680729842}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 80859a3e82021e843bc8b3304fdd54c2, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::FPSMouseController
-  lookAction:
-    m_Name: Look
-    m_Type: 0
-    m_ExpectedControlType: Vector2
-    m_Id: 4d044f13-bf83-4068-8575-f520d8be9650
-    m_Processors: 
-    m_Interactions: 
-    m_SingletonActionBindings:
-    - m_Name: 
-      m_Id: 0ee64a30-babb-47d2-a230-ade76bbd09f7
-      m_Path: <Mouse>/delta
-      m_Interactions: 
-      m_Processors: 
-      m_Groups: 
-      m_Action: Look
-      m_Flags: 0
-    m_Flags: 0
-  mouseSensitivity: 20
-  playerBody: {fileID: 1680729846}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
