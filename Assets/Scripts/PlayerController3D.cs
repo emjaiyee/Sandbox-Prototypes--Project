@@ -11,7 +11,6 @@ public class PlayerController3D : MonoBehaviour
 
     [Header ("Ground Check")]
     [SerializeField] private LayerMask groundLayer;
-    [SerializeField] private float groundCheckDistance = 0.2f;
     [SerializeField] private float sphereRadius = 0.3f;
     private bool isGrounded = true;
 
