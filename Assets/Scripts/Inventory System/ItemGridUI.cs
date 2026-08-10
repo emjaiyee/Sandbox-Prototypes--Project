@@ -11,6 +11,14 @@ public class ItemGridUI : MonoBehaviour
 
     [SerializeField] private ItemData testItemData;
 
+    private void Start()
+    {
+        float totalWidth = gridManager.gridWidth * cellSize;
+        float totalHeight = gridManager.gridHeight * cellSize;
+
+        gridRectTransform.sizeDelta = new UnityEngine.Vector2(totalWidth, totalHeight);
+    }
+
     private void Update()
     {
         if (Input.GetMouseButtonDown(0))

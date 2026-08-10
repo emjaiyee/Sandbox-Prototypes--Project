@@ -4,8 +4,8 @@ public class GridStateManager : MonoBehaviour
 {
     
     [Header("Grid Dimension")]
-    [SerializeField] private int gridWidth; //Columns
-    [SerializeField] private int gridHeight; //Rows
+    public int gridWidth; //Columns
+    public int gridHeight; //Rows
 
     private InventoryItem[,] gridMatrix;
 
