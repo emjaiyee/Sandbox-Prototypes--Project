@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: TestItem
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: 
-  icon: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
+  icon: {fileID: 10911, guid: 0000000000000000f000000000000000, type: 0}
   itemDescription: 
-  gridWidth: 4
-  gridHeight: 4
+  gridWidth: 2
+  gridHeight: 3
