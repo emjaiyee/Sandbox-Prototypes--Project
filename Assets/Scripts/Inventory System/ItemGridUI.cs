@@ -11,6 +11,10 @@ public class ItemGridUI : MonoBehaviour
 
     [SerializeField] private ItemData testItemData;
 
+    // Tracks item state
+    private InventoryItem heldItem;
+    private Vector2Int heldItemOriginalPos;
+
     private void Start()
     {
         float totalWidth = gridManager.gridWidth * cellSize;
@@ -21,21 +25,91 @@ public class ItemGridUI : MonoBehaviour
 
     private void Update()
     {
+        if (heldItem != null)
+        {
+            UpdateHeldItemPosition();
+
+            // Right click rotates hold item
+            if (Input.GetMouseButtonDown(1))
+            {
+                RotateHeldItem();
+            }
+        }
+
+        // Left click handling
         if (Input.GetMouseButtonDown(0))
         {
             Vector2Int gridPos = GetGridPosition(Input.mousePosition);
-            InventoryItem newItem = new InventoryItem(testItemData);
             
-            bool placed = gridManager.PlaceItem(newItem, gridPos.x, gridPos.y);
-
-            if (placed)
+            if (heldItem == null)
             {
-                CreateItemVisual(newItem);
+                InventoryItem clickedItem = gridManager.GetItem(gridPos.x, gridPos.y);
+
+                if (clickedItem != null)
+                {
+                    PickUpItem(clickedItem);
+                }
+                else if (testItemData != null)
+                {
+                    InventoryItem newItem = new InventoryItem(testItemData);
+                    CreateItemVisual(newItem);
+                    heldItem = newItem;
+                    heldItemOriginalPos = gridPos;
+                }
+            }
+            else
+            {
+                bool placed = gridManager.PlaceItem(heldItem, gridPos.x, gridPos.y);
+
+                if (placed)
+                {
+                    SnapVisualToGrid(heldItem);
+                    heldItem = null;
+                }
             }
         }
     }
+
+    private void PickUpItem(InventoryItem item)
+    {
+        heldItem = item;
+        heldItemOriginalPos = item.originPosition;
+
+        gridManager.RemoveItem(item);
+
+        item.itemVisual.SetAsLastSibling();
+    }
+
+    private void RotateHeldItem()
+    {
+        heldItem.Rotate();
+
+        float newWidth = heldItem.GetWidth() * cellSize;
+        float newHeight = heldItem.GetHeight() * cellSize;
+        heldItem.itemVisual.sizeDelta = new UnityEngine.Vector2(newWidth, newHeight);
+    }
     
-    
+    private void UpdateHeldItemPosition()
+    {
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            gridRectTransform,
+            Input.mousePosition,
+            null,
+            out UnityEngine.Vector2 localPoint
+        );
+
+        float widthOffset = (heldItem.GetWidth() * cellSize) / 2f;
+        float heightOffset = (heldItem.GetHeight() * cellSize) / 2f;
+
+        heldItem.itemVisual.anchoredPosition = new UnityEngine.Vector2(localPoint.x - widthOffset, localPoint.y + heightOffset);
+    }
+
+    private void SnapVisualToGrid(InventoryItem item)
+    {
+        float posX = gridRectTransform.rect.xMin + (item.originPosition.x * cellSize);
+        float posY = gridRectTransform.rect.yMax - (item.originPosition.y * cellSize);
+        item.itemVisual.anchoredPosition = new UnityEngine.Vector2(posX, posY);
+    }
 
     // Relative to the local point of the panel pivot
     public Vector2Int GetGridPosition(UnityEngine.Vector2 mousePosition)
@@ -73,10 +147,6 @@ public class ItemGridUI : MonoBehaviour
         float width = item.GetWidth() * cellSize;
         float height = item.GetHeight() * cellSize;
         rectTransform.sizeDelta = new UnityEngine.Vector2(width, height);
-
-        float posX = gridRectTransform.rect.xMin + (item.originPosition.x * cellSize);
-        float posY = gridRectTransform.rect.yMax - (item.originPosition.y * cellSize);
-        rectTransform.anchoredPosition = new UnityEngine.Vector2(posX, posY);
 
         item.itemVisual = rectTransform;
     }

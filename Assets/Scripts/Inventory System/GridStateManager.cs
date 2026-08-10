@@ -9,6 +9,12 @@ public class GridStateManager : MonoBehaviour
 
     private InventoryItem[,] gridMatrix;
 
+    public InventoryItem GetItem(int x, int y)
+    {
+        if (x < 0 || x >= gridWidth || y < 0 || y >= gridHeight) return null;
+        return gridMatrix[x, y];
+    }
+
 
     private void Awake()
     {
