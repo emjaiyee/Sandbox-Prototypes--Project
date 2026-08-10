@@ -1,0 +1,89 @@
+using UnityEngine;
+
+public class GridStateManager : MonoBehaviour
+{
+    
+    [Header("Grid Dimension")]
+    [SerializeField] private int gridWidth; //Columns
+    [SerializeField] private int gridHeight; //Rows
+
+    private InventoryItem[,] gridMatrix;
+
+
+    private void Awake()
+    {
+        InitializeGrid();
+    }
+
+    private void InitializeGrid()
+    {
+        if (gridWidth > 0 && gridHeight > 0)
+        {
+            gridMatrix = new InventoryItem[gridWidth, gridHeight];
+        }
+    }
+
+    public bool IsWithinBounds(int startX, int startY, int width, int height)
+    {
+        if (startX < 0 || startY < 0) return false;
+        if ((startX + width) > gridWidth) return false;
+        if ((startY + height) > gridHeight)return false;
+
+        return true;
+    }
+
+    public bool IsSpaceAvailable(int startX, int startY, int width, int height)
+    {
+        for (int x = startX; x < startX + width; x++)
+        {
+            for (int y = startY; y < startY + height; y++)
+            {
+                if (gridMatrix[x, y] != null)
+                {
+                    return false; // No more available cells
+                }
+            }
+        }
+        return true;
+    }
+
+    public bool PlaceItem(InventoryItem item, int startX, int startY)
+    {
+        int width = item.GetWidth();
+        int height = item.GetHeight();
+
+        if (!IsWithinBounds(startX, startY, width, height)) return false;
+        if (!IsSpaceAvailable(startX, startY, width, height)) return false;
+
+        item.originPosition = new Vector2Int(startX, startY);
+
+        for (int x = startX; x < startX + width; x++)
+        {
+            for (int y = startY; y < startY + height; y++)
+            {
+                gridMatrix[x, y] = item;
+            }
+        }
+
+        return true;
+    }
+
+    public void RemoveItem(InventoryItem item)
+    {
+        int startX = item.originPosition.x;
+        int startY = item.originPosition.y;
+        int width = item.GetWidth();
+        int height = item.GetHeight();
+
+        for (int x = startX; x < startX + width; x++)
+        {
+            for (int y = startY; y < startY + height; y++)
+            {
+                if (gridMatrix[x, y] == item)
+                {
+                    gridMatrix[x, y] = null;
+                }
+            }
+        }
+    }
+}
