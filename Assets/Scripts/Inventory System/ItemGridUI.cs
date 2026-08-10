@@ -6,7 +6,7 @@ using UnityEngine.UI;
 public class ItemGridUI : MonoBehaviour
 {
     [SerializeField] private GridStateManager gridManager;
-    [SerializeField] private RectTransform gridRectTransform;
+    [SerializeField] private RectTransform gridRectTransform; //Anchor top-left
     [SerializeField] private float cellSize = 64f;
 
     [SerializeField] private ItemData testItemData;
@@ -27,6 +27,27 @@ public class ItemGridUI : MonoBehaviour
         }
     }
     
+    
+
+    // Relative to the local point of the panel pivot
+    public Vector2Int GetGridPosition(UnityEngine.Vector2 mousePosition)
+    {
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            gridRectTransform,
+            mousePosition,
+            null,
+            out UnityEngine.Vector2 localPoint
+        );
+
+        float relativeX = localPoint.x - gridRectTransform.rect.xMin;
+        float relativeY = gridRectTransform.rect.yMax - localPoint.y;
+
+        int x = Mathf.FloorToInt(relativeX / cellSize);
+        int y = Mathf.FloorToInt(relativeY / cellSize);
+
+        return new Vector2Int(x,y);
+    }
+
     private void CreateItemVisual(InventoryItem item)
     {
         GameObject obj = new GameObject(item.itemData.itemName, typeof(RectTransform), typeof(Image));
@@ -45,25 +66,10 @@ public class ItemGridUI : MonoBehaviour
         float height = item.GetHeight() * cellSize;
         rectTransform.sizeDelta = new UnityEngine.Vector2(width, height);
 
-        float posX = item.originPosition.x * cellSize;
-        float posY = -item.originPosition.y * cellSize;
+        float posX = gridRectTransform.rect.xMin + (item.originPosition.x * cellSize);
+        float posY = gridRectTransform.rect.yMax - (item.originPosition.y * cellSize);
         rectTransform.anchoredPosition = new UnityEngine.Vector2(posX, posY);
 
         item.itemVisual = rectTransform;
-    }
-
-    public Vector2Int GetGridPosition(UnityEngine.Vector2 mousePosition)
-    {
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            gridRectTransform,
-            mousePosition,
-            null,
-            out UnityEngine.Vector2 localPoint
-        );
-
-        int x = Mathf.FloorToInt(localPoint.x / cellSize);
-        int y = Mathf.FloorToInt(-localPoint.y / cellSize);
-
-        return new Vector2Int(x,y);
     }
 }
