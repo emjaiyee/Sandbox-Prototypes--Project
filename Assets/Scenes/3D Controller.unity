@@ -740,7 +740,7 @@ GameObject:
   - component: {fileID: 1507526768}
   - component: {fileID: 1507526767}
   m_Layer: 5
-  m_Name: TestPanel
+  m_Name: InventoryPanel
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -780,6 +780,10 @@ MonoBehaviour:
   gridManager: {fileID: 214492170}
   gridRectTransform: {fileID: 1507526766}
   cellSize: 64
+  highlightRect: {fileID: 0}
+  highlightImage: {fileID: 0}
+  validColor: {r: 0, g: 1, b: 0, a: 1}
+  invalidColor: {r: 1, g: 0, b: 0, a: 1}
   testItemData: {fileID: 11400000, guid: f5a8236fc467d2a419a54552141270c4, type: 2}
 --- !u!114 &1507526768
 MonoBehaviour:
