@@ -29,14 +29,12 @@ public class ItemGridUI : MonoBehaviour
         {
             UpdateHeldItemPosition();
 
-            // Right click rotates hold item
             if (Input.GetMouseButtonDown(1))
             {
                 RotateHeldItem();
             }
         }
 
-        // Left click handling
         if (Input.GetMouseButtonDown(0))
         {
             Vector2Int gridPos = GetGridPosition(Input.mousePosition);
@@ -84,9 +82,9 @@ public class ItemGridUI : MonoBehaviour
     {
         heldItem.Rotate();
 
-        float newWidth = heldItem.GetWidth() * cellSize;
-        float newHeight = heldItem.GetHeight() * cellSize;
-        heldItem.itemVisual.sizeDelta = new UnityEngine.Vector2(newWidth, newHeight);
+        heldItem.itemVisual.localEulerAngles = new UnityEngine.Vector3(0, 0, heldItem.RotationAngle);
+
+        UpdateHeldItemPosition();
     }
     
     private void UpdateHeldItemPosition()
@@ -101,14 +99,23 @@ public class ItemGridUI : MonoBehaviour
         float widthOffset = (heldItem.GetWidth() * cellSize) / 2f;
         float heightOffset = (heldItem.GetHeight() * cellSize) / 2f;
 
-        heldItem.itemVisual.anchoredPosition = new UnityEngine.Vector2(localPoint.x - widthOffset, localPoint.y + heightOffset);
+        UnityEngine.Vector2 rotOffset = GetRotationOffset(heldItem);
+
+        float posX = localPoint.x - widthOffset + rotOffset.x;
+        float posY = localPoint.y + heightOffset + rotOffset.y;
+
+        heldItem.itemVisual.anchoredPosition = new UnityEngine.Vector2(posX, posY);
     }
 
     private void SnapVisualToGrid(InventoryItem item)
     {
         float posX = gridRectTransform.rect.xMin + (item.originPosition.x * cellSize);
         float posY = gridRectTransform.rect.yMax - (item.originPosition.y * cellSize);
-        item.itemVisual.anchoredPosition = new UnityEngine.Vector2(posX, posY);
+        
+        UnityEngine.Vector2 rotOffset = GetRotationOffset(item);
+
+        item.itemVisual.anchoredPosition = new UnityEngine.Vector2(posX + rotOffset.x, posY + rotOffset.y);
+        item.itemVisual.localEulerAngles = new UnityEngine.Vector3(0, 0, item.RotationAngle);
     }
 
     // Relative to the local point of the panel pivot
@@ -144,10 +151,24 @@ public class ItemGridUI : MonoBehaviour
         rectTransform.anchorMax = new UnityEngine.Vector2(0, 1);
         rectTransform.pivot = new UnityEngine.Vector2(0, 1);
 
-        float width = item.GetWidth() * cellSize;
-        float height = item.GetHeight() * cellSize;
-        rectTransform.sizeDelta = new UnityEngine.Vector2(width, height);
+        float unrotatedWidth = item.itemData.gridWidth * cellSize;
+        float unrotatedHeight = item.itemData.gridHeight * cellSize;
+        rectTransform.sizeDelta = new UnityEngine.Vector2(unrotatedWidth, unrotatedHeight);
 
         item.itemVisual = rectTransform;
+    }
+
+    private UnityEngine.Vector2 GetRotationOffset(InventoryItem item)
+    {
+        float origW = item.itemData.gridWidth * cellSize;
+        float origH = item.itemData.gridHeight * cellSize;
+
+        return item.RotationIndex switch
+        {
+            1 => new UnityEngine.Vector2(origH, 0),
+            2 => new UnityEngine.Vector2(origW, -origH),
+            3 => new UnityEngine.Vector2(0, -origW),
+            _ => UnityEngine.Vector2.zero
+        };
     }
 }
