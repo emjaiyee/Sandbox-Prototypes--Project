@@ -1,5 +1,7 @@
 using System.Diagnostics;
+using System.Drawing;
 using System.Numerics;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -9,11 +11,22 @@ public class ItemGridUI : MonoBehaviour
     [SerializeField] private RectTransform gridRectTransform; //Anchor top-left
     [SerializeField] private float cellSize = 64f;
 
+    [SerializeField] private RectTransform highlightRect;
+    [SerializeField] private Image highlightImage;
+    [SerializeField] private UnityEngine.Color validColor = UnityEngine.Color.green;
+    [SerializeField] private UnityEngine.Color invalidColor = UnityEngine.Color.red;
+
+
     [SerializeField] private ItemData testItemData;
 
     // Tracks item state
     private InventoryItem heldItem;
     private Vector2Int heldItemOriginalPos;
+
+    private void Awake()
+    {
+        InitializeHighlight();
+    }
 
     private void Start()
     {
@@ -25,6 +38,8 @@ public class ItemGridUI : MonoBehaviour
 
     private void Update()
     {
+        UpdateHighlight();
+
         if (heldItem != null)
         {
             UpdateHeldItemPosition();
@@ -57,6 +72,8 @@ public class ItemGridUI : MonoBehaviour
             }
             else
             {
+                heldItem.originPosition = gridPos;
+
                 bool placed = gridManager.PlaceItem(heldItem, gridPos.x, gridPos.y);
 
                 if (placed)
@@ -68,6 +85,50 @@ public class ItemGridUI : MonoBehaviour
         }
     }
 
+    private void InitializeHighlight()
+    {
+        if (highlightRect == null)
+        {
+            GameObject hlObj = new GameObject("GridHighlight", typeof(RectTransform), typeof(Image));
+            hlObj.transform.SetParent(gridRectTransform, false);
+
+            highlightRect = hlObj.GetComponent<RectTransform>();
+            highlightImage = hlObj.GetComponent<Image>();
+
+            highlightRect.anchorMin = new UnityEngine.Vector2(0, 1);
+            highlightRect.anchorMax = new UnityEngine.Vector2(0, 1);
+            highlightRect.pivot = new UnityEngine.Vector2(0, 1);
+
+            highlightImage.raycastTarget = false;
+        }
+        highlightRect.gameObject.SetActive(false);
+    }
+
+    private void UpdateHighlight()
+    {
+        if (heldItem == null)
+        {
+            highlightRect.gameObject.SetActive(false);
+            return;
+        }
+
+        Vector2Int gridPos = GetGridPosition(Input.mousePosition);
+        bool isValid = gridManager.PlaceItem(heldItem, gridPos.x, gridPos.y);
+
+        highlightRect.gameObject.SetActive(true);
+        highlightRect.SetAsLastSibling();
+
+        highlightRect.sizeDelta = new UnityEngine.Vector2(
+            heldItem.GetWidth() * cellSize,
+            heldItem.GetHeight() * cellSize
+        );
+
+        float posX = gridRectTransform.rect.xMin + (gridPos.x * cellSize);
+        float posY = gridRectTransform.rect.yMax - (gridPos.y * cellSize);
+        highlightRect.anchoredPosition = new UnityEngine.Vector2(posX, posY);
+
+        highlightImage.color = isValid ? validColor : invalidColor;
+    }
     private void PickUpItem(InventoryItem item)
     {
         heldItem = item;
@@ -151,9 +212,9 @@ public class ItemGridUI : MonoBehaviour
         rectTransform.anchorMax = new UnityEngine.Vector2(0, 1);
         rectTransform.pivot = new UnityEngine.Vector2(0, 1);
 
-        float unrotatedWidth = item.itemData.gridWidth * cellSize;
-        float unrotatedHeight = item.itemData.gridHeight * cellSize;
-        rectTransform.sizeDelta = new UnityEngine.Vector2(unrotatedWidth, unrotatedHeight);
+        float width = item.itemData.gridWidth * cellSize;
+        float height = item.itemData.gridHeight * cellSize;
+        rectTransform.sizeDelta = new UnityEngine.Vector2(width, height);
 
         item.itemVisual = rectTransform;
     }

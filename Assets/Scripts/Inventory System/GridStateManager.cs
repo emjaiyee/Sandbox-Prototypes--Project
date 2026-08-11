@@ -46,7 +46,7 @@ public class GridStateManager : MonoBehaviour
             {
                 if (gridMatrix[x, y] != null)
                 {
-                    return false; // No more available cells
+                    return false;
                 }
             }
         }
@@ -58,16 +58,19 @@ public class GridStateManager : MonoBehaviour
         int width = item.GetWidth();
         int height = item.GetHeight();
 
-        if (!IsWithinBounds(startX, startY, width, height)) return false;
-        if (!IsSpaceAvailable(startX, startY, width, height)) return false;
-
-        item.originPosition = new Vector2Int(startX, startY);
+        if (startX < 0 || startY < 0 || startX + width > gridWidth || startY + height > gridHeight)
+        {
+            return false;
+        }
 
         for (int x = startX; x < startX + width; x++)
         {
             for (int y = startY; y < startY + height; y++)
             {
-                gridMatrix[x, y] = item;
+                if (gridMatrix[x, y] != null)
+                {
+                    return false;
+                }
             }
         }
 
