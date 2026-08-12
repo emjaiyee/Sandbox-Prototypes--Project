@@ -44,7 +44,7 @@ public class ItemUIController : MonoBehaviour
             float unrotatedHeight = item.itemData.gridHeight * cellSize;
             iconImage.rectTransform.sizeDelta = new UnityEngine.Vector2(unrotatedWidth, unrotatedHeight);
 
-            iconImage.rectTransform.anchoredPosition = new UnityEngine.Vector2(activeWidth / 2f, -activeHeight / 2f);
+            iconImage.rectTransform.anchoredPosition = UnityEngine.Vector2.zero;
 
             iconImage.rectTransform.localEulerAngles = new UnityEngine.Vector3(0, 0, item.RotationAngle);
 

@@ -169,13 +169,11 @@ public class ItemGridUI : MonoBehaviour
             out UnityEngine.Vector2 localPoint
         );
 
-        float widthOffset = (heldItem.GetWidth() * cellSize) / 2f;
-        float heightOffset = (heldItem.GetHeight() * cellSize) / 2f;
+        float width = heldItem.GetWidth() * cellSize;
+        float height = heldItem.GetHeight() * cellSize;
 
-        UnityEngine.Vector2 rotOffset = GetRotationOffset(heldItem);
-
-        float posX = localPoint.x - widthOffset + rotOffset.x;
-        float posY = localPoint.y + heightOffset + rotOffset.y;
+        float posX = localPoint.x - (width / 2f);
+        float posY = localPoint.y + (height / 2f);
 
         heldItem.itemVisual.anchoredPosition = new UnityEngine.Vector2(posX, posY);
         heldItem.itemVisual.SetAsLastSibling();
