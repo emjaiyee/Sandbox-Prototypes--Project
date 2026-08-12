@@ -38,7 +38,6 @@ public class ItemGridUI : MonoBehaviour
 
     private void Update()
     {
-        UpdateHighlight();
 
         if (heldItem != null)
         {
@@ -52,11 +51,10 @@ public class ItemGridUI : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            Vector2Int gridPos = GetGridPosition(Input.mousePosition);
-            
             if (heldItem == null)
             {
-                InventoryItem clickedItem = gridManager.GetItem(gridPos.x, gridPos.y);
+                Vector2Int clickedGridPos = GetGridPosition(Input.mousePosition);
+                InventoryItem clickedItem = gridManager.GetItem(clickedGridPos.x, clickedGridPos.y);
 
                 if (clickedItem != null)
                 {
@@ -67,22 +65,22 @@ public class ItemGridUI : MonoBehaviour
                     InventoryItem newItem = new InventoryItem(testItemData);
                     CreateItemVisual(newItem);
                     heldItem = newItem;
-                    heldItemOriginalPos = gridPos;
+                    heldItemOriginalPos = clickedGridPos;
                 }
             }
             else
             {
-                heldItem.originPosition = gridPos;
+                Vector2Int targetPos = GetHeldItemGridPosition(heldItem);
 
-                bool placed = gridManager.PlaceItem(heldItem, gridPos.x, gridPos.y);
-
-                if (placed)
+                if (gridManager.PlaceItem(heldItem,targetPos.x, targetPos.y))
                 {
                     SnapVisualToGrid(heldItem);
                     heldItem = null;
                 }
             }
         }
+
+        UpdateHighlight();
     }
 
     private void InitializeHighlight()
@@ -112,7 +110,7 @@ public class ItemGridUI : MonoBehaviour
             return;
         }
 
-        Vector2Int gridPos = GetGridPosition(Input.mousePosition);
+        Vector2Int gridPos = GetHeldItemGridPosition(heldItem);
         bool isValid = gridManager.PlaceItem(heldItem, gridPos.x, gridPos.y);
 
         highlightRect.gameObject.SetActive(true);
@@ -170,8 +168,8 @@ public class ItemGridUI : MonoBehaviour
 
     private void SnapVisualToGrid(InventoryItem item)
     {
-        float posX = gridRectTransform.rect.xMin + (item.originPosition.x * cellSize);
-        float posY = gridRectTransform.rect.yMax - (item.originPosition.y * cellSize);
+        float posX = item.originPosition.x * cellSize;
+        float posY = -(item.originPosition.y * cellSize);
         
         UnityEngine.Vector2 rotOffset = GetRotationOffset(item);
 
@@ -196,6 +194,30 @@ public class ItemGridUI : MonoBehaviour
         int y = Mathf.FloorToInt(relativeY / cellSize);
 
         return new Vector2Int(x,y);
+    }
+
+    public Vector2Int GetHeldItemGridPosition(InventoryItem item)
+    {
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            gridRectTransform,
+            Input.mousePosition,
+            null,
+            out UnityEngine.Vector2 localPoint
+        );
+
+        float itemWidthPx = item.GetWidth() * cellSize;
+        float itemHeightPx = item.GetHeight() * cellSize;
+
+        float topLeftX = localPoint.x - (itemWidthPx / 2f);
+        float topLeftY = localPoint.y + (itemHeightPx / 2f);
+
+        float relativeX = topLeftX - gridRectTransform.rect.xMin;
+        float relativeY = gridRectTransform.rect.yMax - topLeftY;
+
+        int x = Mathf.RoundToInt(relativeX / cellSize);
+        int y = Mathf.RoundToInt(relativeY / cellSize);
+
+        return new Vector2Int(x, y);
     }
 
     private void CreateItemVisual(InventoryItem item)

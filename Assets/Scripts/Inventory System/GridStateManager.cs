@@ -55,22 +55,13 @@ public class GridStateManager : MonoBehaviour
 
     public bool PlaceItem(InventoryItem item, int startX, int startY)
     {
-        int width = item.GetWidth();
-        int height = item.GetHeight();
+        item.originPosition = new Vector2Int(startX, startY);
 
-        if (startX < 0 || startY < 0 || startX + width > gridWidth || startY + height > gridHeight)
+        for (int x = startX; x < startX + item.GetWidth(); x++)
         {
-            return false;
-        }
-
-        for (int x = startX; x < startX + width; x++)
-        {
-            for (int y = startY; y < startY + height; y++)
+            for (int y = startY; y < startY + item.GetHeight(); y++)
             {
-                if (gridMatrix[x, y] != null)
-                {
-                    return false;
-                }
+                gridMatrix[x, y] = item;
             }
         }
 
