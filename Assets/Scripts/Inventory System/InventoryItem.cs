@@ -11,9 +11,12 @@ public class InventoryItem
 
     public RectTransform itemVisual;
 
-    public InventoryItem(ItemData data)
+    public int quantity = 1;
+
+    public InventoryItem(ItemData data, int initialQuantity = 1)
     {
         itemData = data;
+        quantity = initialQuantity;
         isRotated = false;
     }
 

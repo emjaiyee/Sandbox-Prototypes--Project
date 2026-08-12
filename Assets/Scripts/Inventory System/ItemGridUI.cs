@@ -13,8 +13,10 @@ public class ItemGridUI : MonoBehaviour
 
     [SerializeField] private RectTransform highlightRect;
     [SerializeField] private Image highlightImage;
-    [SerializeField] private UnityEngine.Color validColor = UnityEngine.Color.green;
-    [SerializeField] private UnityEngine.Color invalidColor = UnityEngine.Color.red;
+    [SerializeField] private UnityEngine.Color validColor = new UnityEngine.Color(0f, 1f, 0f, 0.25f);
+    [SerializeField] private UnityEngine.Color invalidColor = new UnityEngine.Color(0f, 1f, 0f, 0.25f);
+
+    [SerializeField] private GameObject itemPrefab;
 
 
     [SerializeField] private ItemData testItemData;
@@ -60,13 +62,6 @@ public class ItemGridUI : MonoBehaviour
                 {
                     PickUpItem(clickedItem);
                 }
-                else if (testItemData != null)
-                {
-                    InventoryItem newItem = new InventoryItem(testItemData);
-                    CreateItemVisual(newItem);
-                    heldItem = newItem;
-                    heldItemOriginalPos = clickedGridPos;
-                }
             }
             else
             {
@@ -77,6 +72,22 @@ public class ItemGridUI : MonoBehaviour
                     SnapVisualToGrid(heldItem);
                     heldItem = null;
                 }
+            }
+            
+        }
+
+        if (Input.GetKeyDown(KeyCode.C))
+        {
+
+            Vector2Int clickedGridPos = GetGridPosition(Input.mousePosition);
+            InventoryItem clickedItem = gridManager.GetItem(clickedGridPos.x, clickedGridPos.y);
+            
+            if (testItemData != null)
+            {
+                InventoryItem newItem = new InventoryItem(testItemData);
+                CreateItemVisual(newItem);
+                heldItem = newItem;
+                heldItemOriginalPos = clickedGridPos;
             }
         }
 
@@ -114,7 +125,7 @@ public class ItemGridUI : MonoBehaviour
         bool isValid = gridManager.PlaceItem(heldItem, gridPos.x, gridPos.y);
 
         highlightRect.gameObject.SetActive(true);
-        highlightRect.SetAsLastSibling();
+        highlightRect.SetAsFirstSibling();
 
         highlightRect.sizeDelta = new UnityEngine.Vector2(
             heldItem.GetWidth() * cellSize,
@@ -141,7 +152,10 @@ public class ItemGridUI : MonoBehaviour
     {
         heldItem.Rotate();
 
-        heldItem.itemVisual.localEulerAngles = new UnityEngine.Vector3(0, 0, heldItem.RotationAngle);
+        if (heldItem.itemVisual.TryGetComponent<ItemUIController>(out var controller))
+        {
+            controller.UpdateLayout(heldItem, cellSize);
+        }
 
         UpdateHeldItemPosition();
     }
@@ -164,17 +178,22 @@ public class ItemGridUI : MonoBehaviour
         float posY = localPoint.y + heightOffset + rotOffset.y;
 
         heldItem.itemVisual.anchoredPosition = new UnityEngine.Vector2(posX, posY);
+        heldItem.itemVisual.SetAsLastSibling();
     }
 
     private void SnapVisualToGrid(InventoryItem item)
     {
-        float posX = item.originPosition.x * cellSize;
-        float posY = -(item.originPosition.y * cellSize);
-        
-        UnityEngine.Vector2 rotOffset = GetRotationOffset(item);
+        float posX = gridRectTransform.rect.xMin + (item.originPosition.x * cellSize);
+        float posY = gridRectTransform.rect.yMax - (item.originPosition.y * cellSize);
 
-        item.itemVisual.anchoredPosition = new UnityEngine.Vector2(posX + rotOffset.x, posY + rotOffset.y);
-        item.itemVisual.localEulerAngles = new UnityEngine.Vector3(0, 0, item.RotationAngle);
+        item.itemVisual.anchoredPosition = new UnityEngine.Vector2(posX, posY);
+        item.itemVisual.localEulerAngles = UnityEngine.Vector3.zero;
+        item.itemVisual.SetAsLastSibling();
+
+        if (item.itemVisual.TryGetComponent<ItemUIController>(out var controller))
+        {
+            controller.UpdateLayout(item, cellSize);
+        }
     }
 
     // Relative to the local point of the panel pivot
@@ -222,21 +241,19 @@ public class ItemGridUI : MonoBehaviour
 
     private void CreateItemVisual(InventoryItem item)
     {
-        GameObject obj = new GameObject(item.itemData.itemName, typeof(RectTransform), typeof(Image));
-        obj.transform.SetParent(gridRectTransform, false);
+        GameObject obj = Instantiate(itemPrefab, gridRectTransform);
+
+        obj.transform.localScale = UnityEngine.Vector3.one;
+        UnityEngine.Vector3 localPos = obj.transform.localPosition;
+        obj.transform.localPosition = new UnityEngine.Vector3(localPos.x, localPos.y, 0f);
 
         RectTransform rectTransform = obj.GetComponent<RectTransform>();
-        Image image = obj.GetComponent<Image>();
-
-        image.sprite = item.itemData.icon;
-
         rectTransform.anchorMin = new UnityEngine.Vector2(0, 1);
         rectTransform.anchorMax = new UnityEngine.Vector2(0, 1);
         rectTransform.pivot = new UnityEngine.Vector2(0, 1);
 
-        float width = item.itemData.gridWidth * cellSize;
-        float height = item.itemData.gridHeight * cellSize;
-        rectTransform.sizeDelta = new UnityEngine.Vector2(width, height);
+        ItemUIController controller = obj.GetComponent<ItemUIController>();
+        controller.Setup(item, cellSize);
 
         item.itemVisual = rectTransform;
     }
