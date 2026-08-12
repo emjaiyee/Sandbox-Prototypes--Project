@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class GridStateManager : MonoBehaviour
+public class InventoryGrid : MonoBehaviour
 {
     
     [Header("Grid Dimension")]
@@ -8,6 +8,8 @@ public class GridStateManager : MonoBehaviour
     public int gridHeight; //Rows
 
     private InventoryItem[,] gridMatrix;
+    private List<InventoryItem> items = new List<InventoryItem>();
+    public IReadOnlyList<InventoryItem> Items => items;
 
     public InventoryItem GetItem(int x, int y)
     {

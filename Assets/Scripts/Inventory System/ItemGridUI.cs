@@ -7,7 +7,7 @@ using UnityEngine.UI;
 
 public class ItemGridUI : MonoBehaviour
 {
-    [SerializeField] private GridStateManager gridManager;
+    [SerializeField] private InventoryGrid gridManager;
     [SerializeField] private RectTransform gridRectTransform; //Anchor top-left
     [SerializeField] private float cellSize = 64f;
 
