@@ -4,6 +4,14 @@ using System.Numerics;
 using System.Reflection;
 using UnityEngine;
 using UnityEngine.UI;
+using System.Collections.Generic;
+
+[System.Serializable]
+public struct StoredItems
+{
+    public ItemData itemData;
+    [Min(1)] public int quantity;
+}
 
 public class ItemGridUI : MonoBehaviour
 {
@@ -17,6 +25,8 @@ public class ItemGridUI : MonoBehaviour
     [SerializeField] private UnityEngine.Color invalidColor = new UnityEngine.Color(0f, 1f, 0f, 0.25f);
 
     [SerializeField] private GameObject itemPrefab;
+
+    [SerializeField] private List<StoredItems> storedItems = new List<StoredItems>();
 
 
     [SerializeField] private ItemData testItemData;
@@ -36,6 +46,8 @@ public class ItemGridUI : MonoBehaviour
         float totalHeight = gridManager.gridHeight * cellSize;
 
         gridRectTransform.sizeDelta = new UnityEngine.Vector2(totalWidth, totalHeight);
+
+        InitializeInventoryItems();
     }
 
     private void Update()
@@ -50,6 +62,7 @@ public class ItemGridUI : MonoBehaviour
                 RotateHeldItem();
             }
         }
+        
 
         if (Input.GetMouseButtonDown(0))
         {
@@ -70,28 +83,46 @@ public class ItemGridUI : MonoBehaviour
                 if (gridManager.PlaceItem(heldItem,targetPos.x, targetPos.y))
                 {
                     SnapVisualToGrid(heldItem);
+                    
+                    if (heldItem.itemVisual.TryGetComponent<CanvasGroup>(out var canvasGroup))
+                    {
+                        canvasGroup.blocksRaycasts = true;
+                    }
+
                     heldItem = null;
                 }
             }
             
         }
 
-        if (Input.GetKeyDown(KeyCode.C))
-        {
+        UpdateHighlight();
+    }
 
-            Vector2Int clickedGridPos = GetGridPosition(Input.mousePosition);
-            InventoryItem clickedItem = gridManager.GetItem(clickedGridPos.x, clickedGridPos.y);
-            
-            if (testItemData != null)
+    private void InitializeInventoryItems()
+    {
+        foreach (var item in storedItems)
+        {
+            if (item.itemData != null)
             {
-                InventoryItem newItem = new InventoryItem(testItemData);
-                CreateItemVisual(newItem);
-                heldItem = newItem;
-                heldItemOriginalPos = clickedGridPos;
+                TryAddItem(item.itemData, item.quantity);
             }
         }
+    }
 
-        UpdateHighlight();
+    public bool TryAddItem(ItemData itemData, int quantity = 1)
+    {
+        InventoryItem newItem = new InventoryItem(itemData, quantity);
+
+        if (gridManager.FindSpaceForItem(newItem, out Vector2Int position))
+        {
+            gridManager.PlaceItem(newItem, position.x, position.y);
+
+            CreateItemVisual(newItem);
+            SnapVisualToGrid(newItem);
+            return true;
+        }
+
+        return false;
     }
 
     private void InitializeHighlight()
@@ -122,7 +153,7 @@ public class ItemGridUI : MonoBehaviour
         }
 
         Vector2Int gridPos = GetHeldItemGridPosition(heldItem);
-        bool isValid = gridManager.PlaceItem(heldItem, gridPos.x, gridPos.y);
+        bool isValid = gridManager.CanPlaceItem(heldItem, gridPos.x, gridPos.y);
 
         highlightRect.gameObject.SetActive(true);
         highlightRect.SetAsFirstSibling();
@@ -146,6 +177,11 @@ public class ItemGridUI : MonoBehaviour
         gridManager.RemoveItem(item);
 
         item.itemVisual.SetAsLastSibling();
+
+        if (item.itemVisual.TryGetComponent<CanvasGroup>(out var canvasGroup))
+        {
+            canvasGroup.blocksRaycasts = false;
+        }
     }
 
     private void RotateHeldItem()
@@ -215,26 +251,7 @@ public class ItemGridUI : MonoBehaviour
 
     public Vector2Int GetHeldItemGridPosition(InventoryItem item)
     {
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            gridRectTransform,
-            Input.mousePosition,
-            null,
-            out UnityEngine.Vector2 localPoint
-        );
-
-        float itemWidthPx = item.GetWidth() * cellSize;
-        float itemHeightPx = item.GetHeight() * cellSize;
-
-        float topLeftX = localPoint.x - (itemWidthPx / 2f);
-        float topLeftY = localPoint.y + (itemHeightPx / 2f);
-
-        float relativeX = topLeftX - gridRectTransform.rect.xMin;
-        float relativeY = gridRectTransform.rect.yMax - topLeftY;
-
-        int x = Mathf.RoundToInt(relativeX / cellSize);
-        int y = Mathf.RoundToInt(relativeY / cellSize);
-
-        return new Vector2Int(x, y);
+        return GetGridPosition(Input.mousePosition);
     }
 
     private void CreateItemVisual(InventoryItem item)
