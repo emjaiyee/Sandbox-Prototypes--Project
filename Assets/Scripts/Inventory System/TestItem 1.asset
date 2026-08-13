@@ -16,6 +16,6 @@ MonoBehaviour:
   icon: {fileID: 1986807633, guid: e25a5356082552b4492c5433b4764eb7, type: 3}
   itemDescription: 
   gridWidth: 1
-  gridHeight: 1
+  gridHeight: 6
   isStackable: 1
   maxStackSize: 12
