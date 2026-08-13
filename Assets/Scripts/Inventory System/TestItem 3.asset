@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: TestItem 3
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   itemName: 
-  icon: {fileID: -2010400262, guid: 4ae9c8ea7a6a4a146b184f8f62ffaa92, type: 3}
+  icon: {fileID: 1928078818, guid: e25a5356082552b4492c5433b4764eb7, type: 3}
   itemDescription: 
-  gridWidth: 3
-  gridHeight: 3
-  isStackable: 0
-  maxStackSize: 1
+  gridWidth: 2
+  gridHeight: 4
+  isStackable: 1
+  maxStackSize: 12

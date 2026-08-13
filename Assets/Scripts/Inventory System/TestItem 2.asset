@@ -17,5 +17,5 @@ MonoBehaviour:
   itemDescription: 
   gridWidth: 3
   gridHeight: 3
-  isStackable: 0
-  maxStackSize: 1
+  isStackable: 1
+  maxStackSize: 12
