@@ -1,56 +1,43 @@
+using System;
 using UnityEngine;
-using System.Collections.Generic;
 
 public class InventoryGrid : MonoBehaviour
 {
-    
-    [Header("Grid Dimension")]
-    public int gridWidth; //Columns
-    public int gridHeight; //Rows
+    [field: SerializeField] public int GridWidth { get; private set; } = 8;
+    [field: SerializeField] public int GridHeight { get; private set; } = 6;
 
     private InventoryItem[,] gridMatrix;
-    private List<InventoryItem> items = new List<InventoryItem>();
-    public IReadOnlyList<InventoryItem> Items => items;
 
-    public InventoryItem GetItem(int x, int y)
-    {
-        if (x < 0 || x >= gridWidth || y < 0 || y >= gridHeight) return null;
-        return gridMatrix[x, y];
-    }
-
+    // Model Events
+    public event Action<InventoryItem, Vector2Int> OnItemPlaced;
+    public event Action<InventoryItem, Vector2Int> OnItemRemoved;
+    public event Action<InventoryItem> OnItemRotated;
 
     private void Awake()
     {
-        InitializeGrid();
+        gridMatrix = new InventoryItem[GridWidth, GridHeight];
     }
 
-    private void InitializeGrid()
+    public InventoryItem GetItem(int x, int y)
     {
-        if (gridWidth > 0 && gridHeight > 0)
-        {
-            gridMatrix = new InventoryItem[gridWidth, gridHeight];
-        }
+        if (!IsWithinBounds(x, y)) return null;
+        return gridMatrix[x, y];
     }
 
-    public bool IsWithinBounds(int startX, int startY, int width, int height)
+    public bool CanPlaceItem(InventoryItem item, int startX, int startY)
     {
-        if (startX < 0 || startY < 0) return false;
-        if ((startX + width) > gridWidth) return false;
-        if ((startY + height) > gridHeight)return false;
+        int width = item.GetWidth();
+        int height = item.GetHeight();
 
-        return true;
-    }
+        if (!IsWithinBounds(startX, startY) || !IsWithinBounds(startX + width - 1, startY + height - 1))
+            return false;
 
-    public bool IsSpaceAvailable(int startX, int startY, int width, int height)
-    {
         for (int x = startX; x < startX + width; x++)
         {
             for (int y = startY; y < startY + height; y++)
             {
-                if (gridMatrix[x, y] != null)
-                {
+                if (gridMatrix[x, y] != null && gridMatrix[x, y] != item)
                     return false;
-                }
             }
         }
         return true;
@@ -58,23 +45,10 @@ public class InventoryGrid : MonoBehaviour
 
     public bool PlaceItem(InventoryItem item, int startX, int startY)
     {
-        item.originPosition = new Vector2Int(startX, startY);
+        if (!CanPlaceItem(item, startX, startY)) return false;
 
-        for (int x = startX; x < startX + item.GetWidth(); x++)
-        {
-            for (int y = startY; y < startY + item.GetHeight(); y++)
-            {
-                gridMatrix[x, y] = item;
-            }
-        }
+        RemoveItem(item); 
 
-        return true;
-    }
-
-    public void RemoveItem(InventoryItem item)
-    {
-        int startX = item.originPosition.x;
-        int startY = item.originPosition.y;
         int width = item.GetWidth();
         int height = item.GetHeight();
 
@@ -82,11 +56,65 @@ public class InventoryGrid : MonoBehaviour
         {
             for (int y = startY; y < startY + height; y++)
             {
+                gridMatrix[x, y] = item;
+            }
+        }
+
+        item.OriginPosition = new Vector2Int(startX, startY);
+        OnItemPlaced?.Invoke(item, item.OriginPosition);
+        return true;
+    }
+
+    public void RemoveItem(InventoryItem item)
+    {
+        Vector2Int pos = item.OriginPosition;
+        int width = item.GetWidth();
+        int height = item.GetHeight();
+
+        bool clearedAny = false;
+        for (int x = 0; x < GridWidth; x++)
+        {
+            for (int y = 0; y < GridHeight; y++)
+            {
                 if (gridMatrix[x, y] == item)
                 {
                     gridMatrix[x, y] = null;
+                    clearedAny = true;
                 }
             }
         }
+
+        if (clearedAny)
+        {
+            OnItemRemoved?.Invoke(item, pos);
+        }
+    }
+
+    public void RotateItem(InventoryItem item)
+    {
+        item.Rotate();
+        OnItemRotated?.Invoke(item);
+    }
+
+    public bool FindSpaceForItem(InventoryItem item, out Vector2Int position)
+    {
+        for (int y = 0; y <= GridHeight - item.GetHeight(); y++)
+        {
+            for (int x = 0; x <= GridWidth - item.GetWidth(); x++)
+            {
+                if (CanPlaceItem(item, x, y))
+                {
+                    position = new Vector2Int(x, y);
+                    return true;
+                }
+            }
+        }
+        position = Vector2Int.zero;
+        return false;
+    }
+
+    public bool IsWithinBounds(int x, int y)
+    {
+        return x >= 0 && x < GridWidth && y >= 0 && y < GridHeight;
     }
 }

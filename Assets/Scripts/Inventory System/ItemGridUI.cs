@@ -1,97 +1,226 @@
-using System.Diagnostics;
-using System.Drawing;
-using System.Numerics;
-using System.Reflection;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+[System.Serializable]
+    public struct InitialItemEntry
+    {
+        public ItemData itemData;
+        public int quantity;
+    }
+
 public class ItemGridUI : MonoBehaviour
 {
+    [Header("Grid Configuration")]
     [SerializeField] private InventoryGrid gridManager;
-    [SerializeField] private RectTransform gridRectTransform; //Anchor top-left
+    [SerializeField] private RectTransform gridRectTransform;
     [SerializeField] private float cellSize = 64f;
 
+    [Header("Highlight Visuals")]
     [SerializeField] private RectTransform highlightRect;
     [SerializeField] private Image highlightImage;
-    [SerializeField] private UnityEngine.Color validColor = new UnityEngine.Color(0f, 1f, 0f, 0.25f);
-    [SerializeField] private UnityEngine.Color invalidColor = new UnityEngine.Color(0f, 1f, 0f, 0.25f);
+    [SerializeField] private Color validColor = new Color(0f, 1f, 0f, 0.25f);
+    [SerializeField] private Color invalidColor = new Color(1f, 0f, 0f, 0.25f);
 
+    [Header("Item Prefab")]
     [SerializeField] private GameObject itemPrefab;
+    [SerializeField] private List<InitialItemEntry> storedItems = new List<InitialItemEntry>();
 
+    // Mapping Model -> View
+    private readonly Dictionary<InventoryItem, RectTransform> itemVisualMap = new Dictionary<InventoryItem, RectTransform>();
 
-    [SerializeField] private ItemData testItemData;
-
-    // Tracks item state
     private InventoryItem heldItem;
-    private Vector2Int heldItemOriginalPos;
 
-    private void Awake()
+    private void OnEnable()
     {
-        InitializeHighlight();
+        gridManager.OnItemPlaced += HandleItemPlaced;
+        gridManager.OnItemRemoved += HandleItemRemoved;
+        gridManager.OnItemRotated += HandleItemRotated;
+    }
+
+    private void OnDisable()
+    {
+        gridManager.OnItemPlaced -= HandleItemPlaced;
+        gridManager.OnItemRemoved -= HandleItemRemoved;
+        gridManager.OnItemRotated -= HandleItemRotated;
     }
 
     private void Start()
     {
-        float totalWidth = gridManager.gridWidth * cellSize;
-        float totalHeight = gridManager.gridHeight * cellSize;
+        float totalWidth = gridManager.GridWidth * cellSize;
+        float totalHeight = gridManager.GridHeight * cellSize;
+        gridRectTransform.sizeDelta = new Vector2(totalWidth, totalHeight);
 
-        gridRectTransform.sizeDelta = new UnityEngine.Vector2(totalWidth, totalHeight);
+        InitializeHighlight();
+        InitializeInventoryItems();
     }
 
     private void Update()
     {
-
         if (heldItem != null)
         {
             UpdateHeldItemPosition();
 
             if (Input.GetMouseButtonDown(1))
             {
-                RotateHeldItem();
+                gridManager.RotateItem(heldItem);
             }
         }
 
         if (Input.GetMouseButtonDown(0))
         {
-            if (heldItem == null)
-            {
-                Vector2Int clickedGridPos = GetGridPosition(Input.mousePosition);
-                InventoryItem clickedItem = gridManager.GetItem(clickedGridPos.x, clickedGridPos.y);
-
-                if (clickedItem != null)
-                {
-                    PickUpItem(clickedItem);
-                }
-            }
-            else
-            {
-                Vector2Int targetPos = GetHeldItemGridPosition(heldItem);
-
-                if (gridManager.PlaceItem(heldItem,targetPos.x, targetPos.y))
-                {
-                    SnapVisualToGrid(heldItem);
-                    heldItem = null;
-                }
-            }
-            
-        }
-
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-
-            Vector2Int clickedGridPos = GetGridPosition(Input.mousePosition);
-            InventoryItem clickedItem = gridManager.GetItem(clickedGridPos.x, clickedGridPos.y);
-            
-            if (testItemData != null)
-            {
-                InventoryItem newItem = new InventoryItem(testItemData);
-                CreateItemVisual(newItem);
-                heldItem = newItem;
-                heldItemOriginalPos = clickedGridPos;
-            }
+            HandleMouseClick();
         }
 
         UpdateHighlight();
+    }
+
+    private void HandleMouseClick()
+    {
+        if (heldItem == null)
+        {
+            Vector2Int clickedGridPos = GetGridPosition(Input.mousePosition);
+            InventoryItem clickedItem = gridManager.GetItem(clickedGridPos.x, clickedGridPos.y);
+
+            if (clickedItem != null)
+            {
+                PickUpItem(clickedItem);
+            }
+        }
+        else
+        {
+            Vector2Int targetPos = GetGridPosition(Input.mousePosition);
+
+            if (gridManager.PlaceItem(heldItem, targetPos.x, targetPos.y))
+            {
+                if (itemVisualMap.TryGetValue(heldItem, out var visual))
+                {
+                    if (visual.TryGetComponent<CanvasGroup>(out var canvasGroup))
+                    {
+                        canvasGroup.blocksRaycasts = true;
+                    }
+                }
+                heldItem = null;
+            }
+        }
+    }
+
+    private void PickUpItem(InventoryItem item)
+    {
+        heldItem = item;
+        gridManager.RemoveItem(item);
+
+        if (itemVisualMap.TryGetValue(item, out var visual))
+        {
+            visual.SetAsLastSibling();
+            if (visual.TryGetComponent<CanvasGroup>(out var canvasGroup))
+            {
+                canvasGroup.blocksRaycasts = false;
+            }
+        }
+    }
+
+    #region Model Event Callbacks
+
+    private void HandleItemPlaced(InventoryItem item, Vector2Int position)
+    {
+        if (!itemVisualMap.TryGetValue(item, out var visual))
+        {
+            visual = CreateItemVisual(item);
+        }
+
+        SnapVisualToGrid(item, visual);
+    }
+
+    private void HandleItemRemoved(InventoryItem item, Vector2Int previousPosition)
+    {
+        if (heldItem != item && itemVisualMap.TryGetValue(item, out var visual))
+        {
+            Destroy(visual.gameObject);
+            itemVisualMap.Remove(item);
+        }
+    }
+
+    private void HandleItemRotated(InventoryItem item)
+    {
+        if (itemVisualMap.TryGetValue(item, out var visual))
+        {
+            if (visual.TryGetComponent<ItemUIController>(out var controller))
+            {
+                controller.UpdateLayout(item, cellSize);
+            }
+        }
+    }
+
+    #endregion
+
+    #region Visual Mechanics & Positioning
+
+    private RectTransform CreateItemVisual(InventoryItem item)
+    {
+        GameObject obj = Instantiate(itemPrefab, gridRectTransform);
+        obj.transform.localScale = Vector3.one;
+
+        RectTransform rectTransform = obj.GetComponent<RectTransform>();
+        rectTransform.anchorMin = new Vector2(0, 1);
+        rectTransform.anchorMax = new Vector2(0, 1);
+        rectTransform.pivot = new Vector2(0, 1);
+
+        if (obj.TryGetComponent<ItemUIController>(out var controller))
+        {
+            controller.Setup(item, cellSize);
+        }
+
+        itemVisualMap[item] = rectTransform;
+        return rectTransform;
+    }
+
+    private void SnapVisualToGrid(InventoryItem item, RectTransform visual)
+    {
+        float posX = gridRectTransform.rect.xMin + (item.OriginPosition.x * cellSize);
+        float posY = gridRectTransform.rect.yMax - (item.OriginPosition.y * cellSize);
+
+        visual.anchoredPosition = new Vector2(posX, posY);
+        visual.localEulerAngles = Vector3.zero;
+        visual.SetAsLastSibling();
+
+        if (visual.TryGetComponent<ItemUIController>(out var controller))
+        {
+            controller.UpdateLayout(item, cellSize);
+        }
+    }
+
+    private void UpdateHeldItemPosition()
+    {
+        if (!itemVisualMap.TryGetValue(heldItem, out var visual)) return;
+
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            gridRectTransform,
+            Input.mousePosition,
+            null,
+            out Vector2 localPoint
+        );
+
+        visual.anchoredPosition = localPoint;
+        visual.SetAsLastSibling();
+    }
+
+    public Vector2Int GetGridPosition(Vector2 mousePosition)
+    {
+        RectTransformUtility.ScreenPointToLocalPointInRectangle(
+            gridRectTransform,
+            mousePosition,
+            null,
+            out Vector2 localPoint
+        );
+
+        float relativeX = localPoint.x - gridRectTransform.rect.xMin;
+        float relativeY = gridRectTransform.rect.yMax - localPoint.y;
+
+        int x = Mathf.FloorToInt(relativeX / cellSize);
+        int y = Mathf.FloorToInt(relativeY / cellSize);
+
+        return new Vector2Int(x, y);
     }
 
     private void InitializeHighlight()
@@ -104,9 +233,9 @@ public class ItemGridUI : MonoBehaviour
             highlightRect = hlObj.GetComponent<RectTransform>();
             highlightImage = hlObj.GetComponent<Image>();
 
-            highlightRect.anchorMin = new UnityEngine.Vector2(0, 1);
-            highlightRect.anchorMax = new UnityEngine.Vector2(0, 1);
-            highlightRect.pivot = new UnityEngine.Vector2(0, 1);
+            highlightRect.anchorMin = new Vector2(0, 1);
+            highlightRect.anchorMax = new Vector2(0, 1);
+            highlightRect.pivot = new Vector2(0, 1);
 
             highlightImage.raycastTarget = false;
         }
@@ -121,152 +250,38 @@ public class ItemGridUI : MonoBehaviour
             return;
         }
 
-        Vector2Int gridPos = GetHeldItemGridPosition(heldItem);
-        bool isValid = gridManager.PlaceItem(heldItem, gridPos.x, gridPos.y);
+        Vector2Int gridPos = GetGridPosition(Input.mousePosition);
+        bool isValid = gridManager.CanPlaceItem(heldItem, gridPos.x, gridPos.y);
 
         highlightRect.gameObject.SetActive(true);
         highlightRect.SetAsFirstSibling();
 
-        highlightRect.sizeDelta = new UnityEngine.Vector2(
+        highlightRect.sizeDelta = new Vector2(
             heldItem.GetWidth() * cellSize,
             heldItem.GetHeight() * cellSize
         );
 
         float posX = gridRectTransform.rect.xMin + (gridPos.x * cellSize);
         float posY = gridRectTransform.rect.yMax - (gridPos.y * cellSize);
-        highlightRect.anchoredPosition = new UnityEngine.Vector2(posX, posY);
+        highlightRect.anchoredPosition = new Vector2(posX, posY);
 
         highlightImage.color = isValid ? validColor : invalidColor;
     }
-    private void PickUpItem(InventoryItem item)
+
+    private void InitializeInventoryItems()
     {
-        heldItem = item;
-        heldItemOriginalPos = item.originPosition;
-
-        gridManager.RemoveItem(item);
-
-        item.itemVisual.SetAsLastSibling();
-    }
-
-    private void RotateHeldItem()
-    {
-        heldItem.Rotate();
-
-        if (heldItem.itemVisual.TryGetComponent<ItemUIController>(out var controller))
+        foreach (var item in storedItems)
         {
-            controller.UpdateLayout(heldItem, cellSize);
-        }
-
-        UpdateHeldItemPosition();
-    }
-    
-    private void UpdateHeldItemPosition()
-    {
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            gridRectTransform,
-            Input.mousePosition,
-            null,
-            out UnityEngine.Vector2 localPoint
-        );
-
-        float width = heldItem.GetWidth() * cellSize;
-        float height = heldItem.GetHeight() * cellSize;
-
-        float posX = localPoint.x - (width / 2f);
-        float posY = localPoint.y + (height / 2f);
-
-        heldItem.itemVisual.anchoredPosition = new UnityEngine.Vector2(posX, posY);
-        heldItem.itemVisual.SetAsLastSibling();
-    }
-
-    private void SnapVisualToGrid(InventoryItem item)
-    {
-        float posX = gridRectTransform.rect.xMin + (item.originPosition.x * cellSize);
-        float posY = gridRectTransform.rect.yMax - (item.originPosition.y * cellSize);
-
-        item.itemVisual.anchoredPosition = new UnityEngine.Vector2(posX, posY);
-        item.itemVisual.localEulerAngles = UnityEngine.Vector3.zero;
-        item.itemVisual.SetAsLastSibling();
-
-        if (item.itemVisual.TryGetComponent<ItemUIController>(out var controller))
-        {
-            controller.UpdateLayout(item, cellSize);
+            if (item.itemData != null)
+            {
+                InventoryItem newItem = new InventoryItem(item.itemData, item.quantity);
+                if (gridManager.FindSpaceForItem(newItem, out Vector2Int pos))
+                {
+                    gridManager.PlaceItem(newItem, pos.x, pos.y);
+                }
+            }
         }
     }
 
-    // Relative to the local point of the panel pivot
-    public Vector2Int GetGridPosition(UnityEngine.Vector2 mousePosition)
-    {
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            gridRectTransform,
-            mousePosition,
-            null,
-            out UnityEngine.Vector2 localPoint
-        );
-
-        float relativeX = localPoint.x - gridRectTransform.rect.xMin;
-        float relativeY = gridRectTransform.rect.yMax - localPoint.y;
-
-        int x = Mathf.FloorToInt(relativeX / cellSize);
-        int y = Mathf.FloorToInt(relativeY / cellSize);
-
-        return new Vector2Int(x,y);
-    }
-
-    public Vector2Int GetHeldItemGridPosition(InventoryItem item)
-    {
-        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-            gridRectTransform,
-            Input.mousePosition,
-            null,
-            out UnityEngine.Vector2 localPoint
-        );
-
-        float itemWidthPx = item.GetWidth() * cellSize;
-        float itemHeightPx = item.GetHeight() * cellSize;
-
-        float topLeftX = localPoint.x - (itemWidthPx / 2f);
-        float topLeftY = localPoint.y + (itemHeightPx / 2f);
-
-        float relativeX = topLeftX - gridRectTransform.rect.xMin;
-        float relativeY = gridRectTransform.rect.yMax - topLeftY;
-
-        int x = Mathf.RoundToInt(relativeX / cellSize);
-        int y = Mathf.RoundToInt(relativeY / cellSize);
-
-        return new Vector2Int(x, y);
-    }
-
-    private void CreateItemVisual(InventoryItem item)
-    {
-        GameObject obj = Instantiate(itemPrefab, gridRectTransform);
-
-        obj.transform.localScale = UnityEngine.Vector3.one;
-        UnityEngine.Vector3 localPos = obj.transform.localPosition;
-        obj.transform.localPosition = new UnityEngine.Vector3(localPos.x, localPos.y, 0f);
-
-        RectTransform rectTransform = obj.GetComponent<RectTransform>();
-        rectTransform.anchorMin = new UnityEngine.Vector2(0, 1);
-        rectTransform.anchorMax = new UnityEngine.Vector2(0, 1);
-        rectTransform.pivot = new UnityEngine.Vector2(0, 1);
-
-        ItemUIController controller = obj.GetComponent<ItemUIController>();
-        controller.Setup(item, cellSize);
-
-        item.itemVisual = rectTransform;
-    }
-
-    private UnityEngine.Vector2 GetRotationOffset(InventoryItem item)
-    {
-        float origW = item.itemData.gridWidth * cellSize;
-        float origH = item.itemData.gridHeight * cellSize;
-
-        return item.RotationIndex switch
-        {
-            1 => new UnityEngine.Vector2(origH, 0),
-            2 => new UnityEngine.Vector2(origW, -origH),
-            3 => new UnityEngine.Vector2(0, -origW),
-            _ => UnityEngine.Vector2.zero
-        };
-    }
+    #endregion
 }

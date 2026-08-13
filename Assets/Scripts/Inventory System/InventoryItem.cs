@@ -1,41 +1,25 @@
+using System;
 using UnityEngine;
 
 public class InventoryItem
 {
-    public ItemData itemData;
-    public Vector2Int originPosition;
+    public ItemData Data { get; }
+    public int Quantity { get; set; }
+    public Vector2Int OriginPosition { get; set; }
+    public int RotationIndex { get; private set; }
 
-    private bool isRotated = false;
-    public bool IsRotated => isRotated;
-    private int rotationIndex;
-
-    public RectTransform itemVisual;
-
-    public int quantity = 1;
-
-    public InventoryItem(ItemData data, int initialQuantity = 1)
+    public InventoryItem(ItemData data, int quantity = 1)
     {
-        itemData = data;
-        quantity = initialQuantity;
-        isRotated = false;
+        Data = data;
+        Quantity = quantity;
+        RotationIndex = 0;
     }
 
-    public int GetWidth()
-    {
-        return (rotationIndex % 2 == 0) ? itemData.gridWidth : itemData.gridHeight;
-    }
-
-    public int GetHeight()
-    {
-        return (rotationIndex % 2 == 0) ? itemData.gridHeight : itemData.gridWidth;
-    }
+    public int GetWidth() => RotationIndex % 2 == 0 ? Data.gridWidth : Data.gridHeight;
+    public int GetHeight() => RotationIndex % 2 == 0 ? Data.gridHeight : Data.gridWidth;
 
     public void Rotate()
     {
-        rotationIndex = (rotationIndex + 1) % 4;
+        RotationIndex = (RotationIndex + 1) % 4;
     }
-
-    public int RotationIndex => rotationIndex;
-    public float RotationAngle => -90f * rotationIndex;
-
 }

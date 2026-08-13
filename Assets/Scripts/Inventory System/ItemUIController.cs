@@ -1,58 +1,68 @@
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
-using System.Numerics;
 
 public class ItemUIController : MonoBehaviour
 {
-
     [SerializeField] private Image iconImage;
     [SerializeField] private TextMeshProUGUI stackText;
     [SerializeField] private RectTransform rectTransform;
 
+    private void Awake()
+    {
+        if (rectTransform == null)
+            rectTransform = GetComponent<RectTransform>();
+    }
+
     public void Setup(InventoryItem item, float cellSize)
     {
-        iconImage.sprite = item.itemData.icon;
+        if (item == null || item.Data == null) return;
 
-        float width = item.itemData.gridWidth * cellSize;
-        float height = item.itemData.gridHeight * cellSize;
-        rectTransform.sizeDelta = new UnityEngine.Vector2(width, height);
-
-        if (stackText != null)
-        {
-            stackText.gameObject.SetActive(true);
-            stackText.text = item.quantity.ToString();
-        }
-
+        // Set visual icon
         if (iconImage != null)
         {
-            iconImage.sprite = item.itemData.icon;
+            iconImage.sprite = item.Data.icon;
         }
 
+        UpdateStackText(item);
         UpdateLayout(item, cellSize);
     }
 
     public void UpdateLayout(InventoryItem item, float cellSize)
     {
+        if (item == null || item.Data == null) return;
+
         float activeWidth = item.GetWidth() * cellSize;
         float activeHeight = item.GetHeight() * cellSize;
-        rectTransform.sizeDelta = new UnityEngine.Vector2(activeWidth, activeHeight);
+        rectTransform.sizeDelta = new Vector2(activeWidth, activeHeight);
 
         if (iconImage != null)
         {
-            float unrotatedWidth = item.itemData.gridWidth * cellSize;
-            float unrotatedHeight = item.itemData.gridHeight * cellSize;
-            iconImage.rectTransform.sizeDelta = new UnityEngine.Vector2(unrotatedWidth, unrotatedHeight);
+            float unrotatedWidth = item.Data.gridWidth * cellSize;
+            float unrotatedHeight = item.Data.gridHeight * cellSize;
+            
+            iconImage.rectTransform.sizeDelta = new Vector2(unrotatedWidth, unrotatedHeight);
+            iconImage.rectTransform.anchoredPosition = Vector2.zero;
 
-            iconImage.rectTransform.anchoredPosition = UnityEngine.Vector2.zero;
+            float rotationAngle = -90f * item.RotationIndex;
+            iconImage.rectTransform.localEulerAngles = new Vector3(0, 0, rotationAngle);
+        }
 
-            iconImage.rectTransform.localEulerAngles = new UnityEngine.Vector3(0, 0, item.RotationAngle);
+        UpdateStackText(item);
+    }
 
-            if (stackText != null)
-            {
-                stackText.gameObject.SetActive(true);
-                stackText.text = item.quantity.ToString();
-            }
+    private void UpdateStackText(InventoryItem item)
+    {
+        if (stackText == null) return;
+
+        if (item.Data.isStackable && item.Quantity > 1)
+        {
+            stackText.gameObject.SetActive(true);
+            stackText.text = item.Quantity.ToString();
+        }
+        else
+        {
+            stackText.gameObject.SetActive(false);
         }
     }
 }
