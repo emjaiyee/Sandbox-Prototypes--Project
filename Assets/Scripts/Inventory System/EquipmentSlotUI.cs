@@ -52,12 +52,7 @@ public class EquipmentSlotUI : MonoBehaviour, IPointerClickHandler
         RectTransform previousVisual = equippedVisual;
 
         EquippedItem = newItem;
-
-        ItemUIController controller = FindAnyObjectByType<ItemUIController>();
-        if (controller != null)
-        {
-            equippedVisual = controller.GetComponent<RectTransform>();
-        }
+        equippedVisual = dragManager.heldItemVisual;
 
         if (equippedVisual != null)
         {
@@ -74,7 +69,7 @@ public class EquipmentSlotUI : MonoBehaviour, IPointerClickHandler
             }
         }
 
-        dragManager.CancelDrag();
+        dragManager.ClearHeldState();
 
         if (previousItem != null && previousVisual != null)
         {

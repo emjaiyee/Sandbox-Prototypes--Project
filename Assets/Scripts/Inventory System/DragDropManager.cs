@@ -16,11 +16,13 @@ public class DragDropManager : MonoBehaviour
     public InventoryItem HeldItem { get; private set; }
     public ItemGridUI SourceGrid { get; private set; }
 
+    public RectTransform heldItemVisual;
+
     public event Action<InventoryItem> OnItemPickedUp;
     public event Action<InventoryItem> OnItemDropped;
     public event Action<InventoryItem> OnItemRotated;
 
-    private RectTransform heldItemVisual;
+    
     private ItemUIController itemUIController;
 
     private void Awake()
@@ -119,6 +121,11 @@ public class DragDropManager : MonoBehaviour
             }
         }
 
+        ClearHeldItem();
+    }
+
+    public void ClearHeldState()
+    {
         ClearHeldItem();
     }
 
