@@ -2,7 +2,7 @@ using UnityEngine;
 
 
 
-public enum ItemType
+public enum EquipmentType
 {
     None,
     Consumable,
@@ -17,8 +17,8 @@ public class ItemData : ScriptableObject
 {
 
     [Header("Item Type")]
-    [SerializeField] private ItemType itemType = ItemType.None;
-    public ItemType ItemType => itemType;
+    [SerializeField] private EquipmentType equipmentType = EquipmentType.None;
+    public EquipmentType EquipmentType => equipmentType;
 
     public string itemName;
     public Sprite icon;
