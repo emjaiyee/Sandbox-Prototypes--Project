@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class InventoryToggle : MonoBehaviour
 {
@@ -6,7 +7,8 @@ public class InventoryToggle : MonoBehaviour
     [SerializeField] private GameObject inventoryPanel;
 
     [Header("Settings")]
-    [SerializeField] private KeyCode toggleKey = KeyCode.I;
+    [SerializeField] private InputAction inventoryAction;
+
     [SerializeField] private bool startOpen = false;
 
     public bool IsOpen => inventoryPanel != null && inventoryPanel.activeSelf;
@@ -18,7 +20,7 @@ public class InventoryToggle : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(toggleKey))
+        if (inventoryAction.WasPressedThisFrame())
         {
             ToggleInventory();
         }
@@ -41,5 +43,15 @@ public class InventoryToggle : MonoBehaviour
         }
 
         inventoryPanel.SetActive(isOpen);
+    }
+
+    private void OnEnable() 
+    {
+        inventoryAction.Enable();
+    }
+
+    private void OnDisable()
+    {
+        inventoryAction.Disable();
     }
 }

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class ItemGridUI : MonoBehaviour
 {
@@ -7,6 +8,9 @@ public class ItemGridUI : MonoBehaviour
     [SerializeField] private InventoryGrid gridManager;
     [SerializeField] private RectTransform gridRectTransform;
     [SerializeField] private float cellSize = 64f;
+
+    [Header("Input Handling")]
+    [SerializeField] private InputAction clickAction;
 
     [Header("Item Prefab")]
     [SerializeField] private GameObject itemPrefab;
@@ -33,6 +37,8 @@ public class ItemGridUI : MonoBehaviour
 
     private void OnEnable()
     {
+        clickAction.Enable();
+
         gridManager.OnItemPlaced += HandleItemPlaced;
         gridManager.OnItemRemoved += HandleItemRemoved;
         gridManager.OnItemRotated += HandleItemRotated;
@@ -40,6 +46,8 @@ public class ItemGridUI : MonoBehaviour
 
     private void OnDisable()
     {
+        clickAction.Disable();
+
         gridManager.OnItemPlaced -= HandleItemPlaced;
         gridManager.OnItemRemoved -= HandleItemRemoved;
         gridManager.OnItemRotated -= HandleItemRotated;
@@ -56,7 +64,7 @@ public class ItemGridUI : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetMouseButtonDown(0))
+        if (clickAction.WasPressedThisFrame())
         {
             HandleMouseClick();
         }
@@ -64,7 +72,7 @@ public class ItemGridUI : MonoBehaviour
 
     private void HandleMouseClick()
     {
-        Vector2Int gridPos = GetGridPosition(Input.mousePosition);
+        Vector2Int gridPos = GetGridPosition(Mouse.current.position.ReadValue());
         if (!gridManager.IsWithinBounds(gridPos.x, gridPos.y)) return;
 
         DragDropManager dragManager = DragDropManager.Instance;

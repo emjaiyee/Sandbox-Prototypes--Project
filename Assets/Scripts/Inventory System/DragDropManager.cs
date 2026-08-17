@@ -1,6 +1,7 @@
 using System;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class DragDropManager : MonoBehaviour
 {
@@ -8,6 +9,9 @@ public class DragDropManager : MonoBehaviour
 
     [Header("UI Drag Container")]
     [SerializeField] private Canvas mainCanvas;
+
+    [Header("Input Handling")]
+    [SerializeField] InputAction rotateAction;
 
     public InventoryItem HeldItem { get; private set; }
     public ItemGridUI SourceGrid { get; private set; }
@@ -41,7 +45,7 @@ public class DragDropManager : MonoBehaviour
 
         UpdateHeldItemPosition();
 
-        if (Input.GetMouseButtonDown(1))
+        if (rotateAction.WasPressedThisFrame())
         {
             RotateHeldItem();
         }
@@ -140,18 +144,29 @@ public class DragDropManager : MonoBehaviour
 
         Camera uiCamera = mainCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : mainCanvas.worldCamera;
 
+        Vector2 mousePos = Mouse.current.position.ReadValue();
+
         if (RectTransformUtility.ScreenPointToWorldPointInRectangle(
             mainCanvas.GetComponent<RectTransform>(),
-            Input.mousePosition,
+            mousePos,
             uiCamera,
             out Vector3 worldPoint))
         {
             heldItemVisual.position = worldPoint;
             
-            // Force local Z to 0 to prevent clipping outside camera planes
             Vector3 localPos = heldItemVisual.localPosition;
             localPos.z = 0f;
             heldItemVisual.localPosition = localPos;
         }
+    }
+
+    private void OnEnable()
+    {
+        rotateAction.Enable();
+    }
+
+    private void OnDisable()
+    {
+        rotateAction.Disable();
     }
 }
