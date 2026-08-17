@@ -10,11 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 95f0838bfac6e924f8a60d31fb0b2b11, type: 3}
-  m_Name: Chestplate
+  m_Name: Sword 1
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  equipmentType: 4
+  equipmentType: 2
   itemName: 
-  icon: {fileID: -2060860911, guid: 37f02b0f9afdc5a4ab8b5049d568523c, type: 3}
+  icon: {fileID: -449689131, guid: 37f02b0f9afdc5a4ab8b5049d568523c, type: 3}
   itemDescription: 
   gridWidth: 1
   gridHeight: 1

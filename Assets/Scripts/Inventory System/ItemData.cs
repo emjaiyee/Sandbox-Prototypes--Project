@@ -5,11 +5,11 @@ using UnityEngine;
 public enum EquipmentType
 {
     None,
-    Consumable,
     Weapon,
     Helmet,
     Chestplate,
-    Legging
+    Legging,
+    Shield
 }
 
 [CreateAssetMenu(fileName = "ItemData", menuName = "Inventory/ItemData")]
@@ -20,8 +20,10 @@ public class ItemData : ScriptableObject
     [SerializeField] private EquipmentType equipmentType = EquipmentType.None;
     public EquipmentType EquipmentType => equipmentType;
 
+
     public string itemName;
     public Sprite icon;
+    public Sprite equipmentIcon;
     [TextArea] public string itemDescription;
 
     [Header("Item Size")]

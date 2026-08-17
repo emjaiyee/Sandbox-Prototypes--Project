@@ -99,6 +99,17 @@ public class ItemGridUI : MonoBehaviour
 
     private void HandleItemPlaced(InventoryItem item, Vector2Int position)
     {
+        DragDropManager dragManager = DragDropManager.Instance;
+
+        if (dragManager.HeldItem == item && dragManager.HeldItemVisual != null)
+        {
+            RectTransform heldVisual = dragManager.HeldItemVisual;
+            heldVisual.SetParent(gridRectTransform, false);
+            itemVisualMap[item] = heldVisual;
+            SnapVisualToGrid(item, heldVisual);
+            return;
+        }
+
         if (!itemVisualMap.TryGetValue(item, out var visual) || visual == null)
         {
             visual = CreateItemVisual(item);
@@ -156,6 +167,9 @@ public class ItemGridUI : MonoBehaviour
 
     private void SnapVisualToGrid(InventoryItem item, RectTransform visual)
     {
+        visual.anchorMin = new Vector2(0, 1);
+        visual.anchorMax = new Vector2(0, 1);
+        visual.pivot = new Vector2(0, 1);
 
         float posX = gridRectTransform.rect.xMin + (item.OriginPosition.x * cellSize);
         float posY = gridRectTransform.rect.yMax - (item.OriginPosition.y * cellSize);

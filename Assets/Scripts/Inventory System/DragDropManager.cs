@@ -13,17 +13,17 @@ public class DragDropManager : MonoBehaviour
     [Header("Input Handling")]
     [SerializeField] InputAction rotateAction;
 
+    public RectTransform heldItemVisual;
+    private ItemUIController itemUIController;
+
     public InventoryItem HeldItem { get; private set; }
     public ItemGridUI SourceGrid { get; private set; }
 
-    public RectTransform heldItemVisual;
+    public RectTransform HeldItemVisual => heldItemVisual;
 
     public event Action<InventoryItem> OnItemPickedUp;
     public event Action<InventoryItem> OnItemDropped;
     public event Action<InventoryItem> OnItemRotated;
-
-    
-    private ItemUIController itemUIController;
 
     private void Awake()
     {

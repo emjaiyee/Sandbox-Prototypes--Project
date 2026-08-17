@@ -12,9 +12,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95f0838bfac6e924f8a60d31fb0b2b11, type: 3}
   m_Name: Legging
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  equipmentType: 0
+  equipmentType: 5
   itemName: 
-  icon: {fileID: 0}
+  icon: {fileID: -1439114822, guid: 37f02b0f9afdc5a4ab8b5049d568523c, type: 3}
   itemDescription: 
   gridWidth: 1
   gridHeight: 1
