@@ -14,9 +14,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
   equipmentType: 4
   itemName: 
-  icon: {fileID: -2060860911, guid: 37f02b0f9afdc5a4ab8b5049d568523c, type: 3}
   itemDescription: 
-  gridWidth: 1
-  gridHeight: 1
+  gridSize: {x: 1, y: 1}
+  inventoryIcon: {fileID: -2060860911, guid: 37f02b0f9afdc5a4ab8b5049d568523c, type: 3}
+  equipmentIcon: {fileID: 0}
+  gridWidth: 2
+  gridHeight: 2
   isStackable: 0
   maxStackSize: 1

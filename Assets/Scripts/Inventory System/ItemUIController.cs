@@ -18,14 +18,35 @@ public class ItemUIController : MonoBehaviour
     {
         if (item == null || item.Data == null) return;
 
-        // Set visual icon
+        // if (iconImage != null)
+        // {
+        //     iconImage.sprite = item.Data.icon;
+        // }
+
+        UpdateIconSprite(item);
+        UpdateStackText(item);
+        UpdateLayout(item, cellSize);
+    }
+
+    public void SetupForEquipment(InventoryItem item, float slotSize = 64f)
+    {
+        if (item == null || item.Data == null) return;
+
+        rectTransform.sizeDelta = new Vector2(slotSize, slotSize);
+
         if (iconImage != null)
         {
-            iconImage.sprite = item.Data.icon;
+            Sprite equipSprite = item.Data.equipmentIcon != null ? item.Data.equipmentIcon : item.Data.inventoryIcon;
+            iconImage.sprite = equipSprite;
+
+            RectTransform iconRect = iconImage.rectTransform;
+            iconRect.sizeDelta = new Vector2(slotSize, slotSize);
+            iconRect.anchoredPosition = Vector2.zero;
+            iconRect.localEulerAngles = Vector3.zero;
+            iconImage.preserveAspect = true;
         }
 
         UpdateStackText(item);
-        UpdateLayout(item, cellSize);
     }
 
     public void UpdateLayout(InventoryItem item, float cellSize)
@@ -40,15 +61,25 @@ public class ItemUIController : MonoBehaviour
         {
             float unrotatedWidth = item.Data.gridWidth * cellSize;
             float unrotatedHeight = item.Data.gridHeight * cellSize;
-            
+
+            RectTransform iconRect = iconImage.rectTransform;
             iconImage.rectTransform.sizeDelta = new Vector2(unrotatedWidth, unrotatedHeight);
             iconImage.rectTransform.anchoredPosition = Vector2.zero;
+
+            iconImage.preserveAspect = true;
 
             float rotationAngle = -90f * item.RotationIndex;
             iconImage.rectTransform.localEulerAngles = new Vector3(0, 0, rotationAngle);
         }
 
         UpdateStackText(item);
+    }
+
+    private void UpdateIconSprite(InventoryItem item)
+    {
+        if (iconImage == null || item?.Data == null) return;
+
+        iconImage.sprite = item.Data.inventoryIcon;
     }
 
     private void UpdateStackText(InventoryItem item)

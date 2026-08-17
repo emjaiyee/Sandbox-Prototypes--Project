@@ -20,11 +20,12 @@ public class ItemData : ScriptableObject
     [SerializeField] private EquipmentType equipmentType = EquipmentType.None;
     public EquipmentType EquipmentType => equipmentType;
 
-
     public string itemName;
-    public Sprite icon;
-    public Sprite equipmentIcon;
     [TextArea] public string itemDescription;
+    public Vector2Int gridSize = new Vector2Int(1, 1);
+    public Sprite inventoryIcon;
+    public Sprite equipmentIcon;
+    
 
     [Header("Item Size")]
     public int gridWidth = 1;

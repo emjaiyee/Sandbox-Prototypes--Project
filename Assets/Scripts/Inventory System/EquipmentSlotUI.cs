@@ -1,11 +1,14 @@
 using System.ComponentModel;
+using System.Reflection;
 using UnityEngine;
 using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
 public class EquipmentSlotUI : MonoBehaviour, IPointerClickHandler
 {
     [SerializeField] private EquipmentType slotType;
     [SerializeField] private RectTransform slotRectTransform;
+    [SerializeField] private Image slotIconImage;
 
     public InventoryItem EquippedItem { get; private set; }
     public EquipmentType SlotType => slotType;
@@ -62,6 +65,13 @@ public class EquipmentSlotUI : MonoBehaviour, IPointerClickHandler
             equippedVisual.pivot = new Vector2(0.5f, 0.5f);
             equippedVisual.anchoredPosition = Vector2.zero;
             equippedVisual.localRotation = Quaternion.identity;
+            equippedVisual.localRotation = Quaternion.identity;
+            equippedVisual.localScale = Vector3.one;
+
+            if (equippedVisual.TryGetComponent<ItemUIController>(out var controller))
+            {
+                controller.SetupForEquipment(newItem, 64f);
+            }
 
             if (equippedVisual.TryGetComponent<CanvasGroup>(out var canvasGroup))
             {
@@ -90,5 +100,25 @@ public class EquipmentSlotUI : MonoBehaviour, IPointerClickHandler
         equippedVisual = null;
 
         dragManager.PickUpItem(itemToPickup, null, visualToPickup);
+    }
+
+    public void UpdateSlotVisual(InventoryItem item)
+    {
+        if (item != null && item.Data != null)
+        {
+            slotIconImage.sprite = item.Data.equipmentIcon != null
+            ? item.Data.equipmentIcon
+            :item.Data.inventoryIcon;
+
+            slotIconImage.enabled = true;
+
+            RectTransform rect = slotIconImage.rectTransform;
+            rect.sizeDelta = new Vector2(64f, 64f);
+            slotIconImage.preserveAspect = true;
+        }
+        else
+        {
+            slotIconImage.enabled = false;
+        }
     }
 }
