@@ -1,8 +1,12 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-public class InventoryToggle : MonoBehaviour
+public class PlayerInventory : MonoBehaviour
 {
+    [SerializeField] private InventoryGrid mainBackpack;
+
+    public InventoryGrid MainBackPack => mainBackpack;
+
     [Header("UI Reference")]
     [SerializeField] private GameObject inventoryPanel;
 
@@ -10,7 +14,6 @@ public class InventoryToggle : MonoBehaviour
     [SerializeField] private InputAction inventoryAction;
 
     [SerializeField] private bool startOpen = false;
-
     public bool IsOpen => inventoryPanel != null && inventoryPanel.activeSelf;
 
     private void Start()
@@ -53,5 +56,12 @@ public class InventoryToggle : MonoBehaviour
     private void OnDisable()
     {
         inventoryAction.Disable();
+    }
+
+    public bool Pickup(Loot item)
+    {
+        if (mainBackpack == null || item == null) return false;
+
+        return item.TryPickup(mainBackpack);
     }
 }

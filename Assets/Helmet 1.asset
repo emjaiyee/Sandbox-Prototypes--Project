@@ -10,15 +10,15 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 95f0838bfac6e924f8a60d31fb0b2b11, type: 3}
-  m_Name: Potion
+  m_Name: Helmet 1
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  equipmentType: 0
+  equipmentType: 3
   itemName: 
   itemDescription: 
   gridSize: {x: 1, y: 1}
-  inventoryIcon: {fileID: -1592985113, guid: 37f02b0f9afdc5a4ab8b5049d568523c, type: 3}
-  equipmentIcon: {fileID: 0}
+  inventoryIcon: {fileID: 2084459083, guid: 37f02b0f9afdc5a4ab8b5049d568523c, type: 3}
+  equipmentIcon: {fileID: -1075922748, guid: 37f02b0f9afdc5a4ab8b5049d568523c, type: 3}
   gridWidth: 1
-  gridHeight: 1
-  isStackable: 1
-  maxStackSize: 12
+  gridHeight: 2
+  isStackable: 0
+  maxStackSize: 1

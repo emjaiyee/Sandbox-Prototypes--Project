@@ -18,11 +18,6 @@ public class ItemUIController : MonoBehaviour
     {
         if (item == null || item.Data == null) return;
 
-        // if (iconImage != null)
-        // {
-        //     iconImage.sprite = item.Data.icon;
-        // }
-
         UpdateIconSprite(item);
         UpdateStackText(item);
         UpdateLayout(item, cellSize);

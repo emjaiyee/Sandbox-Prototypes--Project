@@ -43,6 +43,8 @@ public class ItemGridUI : MonoBehaviour
         gridManager.OnItemRemoved += HandleItemRemoved;
         gridManager.OnItemRotated += HandleItemRotated;
         gridManager.OnItemUpdated += HandleItemUpdated;
+        
+        RebuildGridVisuals();
     }
 
     private void OnDisable()
@@ -72,7 +74,33 @@ public class ItemGridUI : MonoBehaviour
         }
     }
 
+    public void RebuildGridVisuals()
+    {
+        foreach (var kvp in itemVisualMap)
+    {
+            if (kvp.Value != null) Destroy(kvp.Value.gameObject);
+        }
+        itemVisualMap.Clear();
 
+        if (gridManager == null) return;
+
+        // Iterate grid matrix and instantiate unique item visuals
+        HashSet<InventoryItem> processedItems = new HashSet<InventoryItem>();
+
+        for (int x = 0; x < gridManager.GridWidth; x++)
+        {
+            for (int y = 0; y < gridManager.GridHeight; y++)
+            {
+                InventoryItem item = gridManager.GetItem(x, y);
+                if (item != null && !processedItems.Contains(item))
+                {
+                    processedItems.Add(item);
+                    RectTransform visual = CreateItemVisual(item);
+                    SnapVisualToGrid(item, visual);
+                }
+            }
+        }
+    }
 
     private void HandleMouseClick()
     {
@@ -109,8 +137,6 @@ public class ItemGridUI : MonoBehaviour
             }
         }
     }
-
-    #region Model Callbacks
 
     private void HandleItemPlaced(InventoryItem item, Vector2Int position)
     {
@@ -156,10 +182,6 @@ public class ItemGridUI : MonoBehaviour
             }
         }
     }
-
-    #endregion
-
-    #region Visual Helpers
 
     private RectTransform CreateItemVisual(InventoryItem item)
     {
@@ -236,5 +258,4 @@ public class ItemGridUI : MonoBehaviour
         }
     }
 
-    #endregion
 }
