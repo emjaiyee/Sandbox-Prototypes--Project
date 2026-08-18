@@ -16,8 +16,8 @@ MonoBehaviour:
   itemName: 
   itemDescription: 
   gridSize: {x: 1, y: 1}
-  inventoryIcon: {fileID: 2084459083, guid: 37f02b0f9afdc5a4ab8b5049d568523c, type: 3}
-  equipmentIcon: {fileID: -1075922748, guid: 37f02b0f9afdc5a4ab8b5049d568523c, type: 3}
+  inventoryIcon: {fileID: -1075922748, guid: 37f02b0f9afdc5a4ab8b5049d568523c, type: 3}
+  equipmentIcon: {fileID: 0}
   gridWidth: 1
   gridHeight: 2
   isStackable: 0

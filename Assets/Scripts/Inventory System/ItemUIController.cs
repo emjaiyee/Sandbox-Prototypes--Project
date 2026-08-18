@@ -48,12 +48,16 @@ public class ItemUIController : MonoBehaviour
     {
         if (item == null || item.Data == null) return;
 
+        rectTransform.localScale = Vector3.one;
+
         float activeWidth = item.GetWidth() * cellSize;
         float activeHeight = item.GetHeight() * cellSize;
         rectTransform.sizeDelta = new Vector2(activeWidth, activeHeight);
 
         if (iconImage != null)
         {
+            UpdateIconSprite(item);
+
             float unrotatedWidth = item.Data.gridWidth * cellSize;
             float unrotatedHeight = item.Data.gridHeight * cellSize;
 
