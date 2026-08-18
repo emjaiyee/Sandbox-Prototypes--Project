@@ -42,6 +42,7 @@ public class ItemGridUI : MonoBehaviour
         gridManager.OnItemPlaced += HandleItemPlaced;
         gridManager.OnItemRemoved += HandleItemRemoved;
         gridManager.OnItemRotated += HandleItemRotated;
+        gridManager.OnItemUpdated += HandleItemUpdated;
     }
 
     private void OnDisable()
@@ -51,6 +52,7 @@ public class ItemGridUI : MonoBehaviour
         gridManager.OnItemPlaced -= HandleItemPlaced;
         gridManager.OnItemRemoved -= HandleItemRemoved;
         gridManager.OnItemRotated -= HandleItemRotated;
+        gridManager.OnItemUpdated -= HandleItemUpdated;
     }
 
     private void Start()
@@ -69,6 +71,8 @@ public class ItemGridUI : MonoBehaviour
             HandleMouseClick();
         }
     }
+
+
 
     private void HandleMouseClick()
     {
@@ -92,6 +96,17 @@ public class ItemGridUI : MonoBehaviour
         else
         {
             dragManager.PlaceHeldItemIntoGrid(gridManager, gridPos.x, gridPos.y);
+        }
+    }
+
+    private void HandleItemUpdated(InventoryItem item)
+    {
+        if (itemVisualMap.TryGetValue(item, out var visual) && visual != null)
+        {
+            if (visual.TryGetComponent<ItemUIController>(out var controller))
+            {
+                controller.UpdateLayout(item, cellSize);
+            }
         }
     }
 

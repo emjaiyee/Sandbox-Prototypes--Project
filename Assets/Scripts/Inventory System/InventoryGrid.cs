@@ -12,6 +12,7 @@ public class InventoryGrid : MonoBehaviour
     public event Action<InventoryItem, Vector2Int> OnItemPlaced;
     public event Action<InventoryItem, Vector2Int> OnItemRemoved;
     public event Action<InventoryItem> OnItemRotated;
+    public event Action<InventoryItem> OnItemUpdated;
 
     private void Awake()
     {
@@ -22,6 +23,65 @@ public class InventoryGrid : MonoBehaviour
     {
         if (!IsWithinBounds(x, y)) return null;
         return gridMatrix[x, y];
+    }
+
+    public bool TryAddItem(InventoryItem item)
+    {
+        if (item == null || item.Data == null || item.Quantity <= 0) return false;
+
+        // Try stack existing items
+        if (item.Data.isStackable)
+        {
+            TryStackItem(item);
+            if (item.Quantity <= 0) return true;
+        }
+
+        // Look for unrotated placement
+        if (FindSpaceForItem(item, out Vector2Int position))
+        {
+            return PlaceItem(item, position.x, position.y);
+        }
+
+        // Look for rotated placement
+        item.Rotate();
+        if (FindSpaceForItem(item, out position))
+        {
+            OnItemRotated?.Invoke(item);
+            return PlaceItem(item, position.x, position.y);
+        }
+
+        // Revert if no fit
+        item.Rotate();
+        OnItemRotated?.Invoke(item);
+        return false;
+    }
+
+    private void TryStackItem(InventoryItem item)
+    {
+        for (int y = 0; y < GridHeight; y++)
+        {
+            for (int x = 0; x < GridWidth; x++)
+            {
+                InventoryItem existingItem = gridMatrix[x, y];
+
+                if (existingItem != null && existingItem.Data == item.Data && existingItem.OriginPosition == new Vector2Int(x, y))
+                {
+                    int maxStack = existingItem.Data.maxStackSize;
+                    if (existingItem.Quantity < maxStack)
+                    {
+                        int spaceAvailable = maxStack - existingItem.Quantity;
+                        int amountToTransfer = Mathf.Min(spaceAvailable, item.Quantity);
+
+                        existingItem.Quantity += amountToTransfer;
+                        item.Quantity -= amountToTransfer;
+
+                        OnItemUpdated?.Invoke(existingItem);
+
+                        if (item.Quantity <= 0) return;
+                    }
+                }
+            }
+        }
     }
 
     public bool CanPlaceItem(InventoryItem item, int startX, int startY)
