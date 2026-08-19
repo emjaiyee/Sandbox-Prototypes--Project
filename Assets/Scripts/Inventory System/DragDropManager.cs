@@ -11,13 +11,14 @@ public class DragDropManager : MonoBehaviour
     [SerializeField] private Canvas mainCanvas;
 
     [Header("Input Handling")]
-    [SerializeField] InputAction rotateAction;
+    [SerializeField] private InputAction rotateAction;
 
     public RectTransform heldItemVisual;
     private ItemUIController itemUIController;
 
     public InventoryItem HeldItem { get; private set; }
     public ItemGridUI SourceGrid { get; private set; }
+    public EquipmentSlotUI SourceSlot { get; private set; }
 
     public RectTransform HeldItemVisual => heldItemVisual;
 
@@ -53,18 +54,18 @@ public class DragDropManager : MonoBehaviour
         }
     }
 
-    public bool PickUpItem(InventoryItem item, ItemGridUI sourceGrid, RectTransform itemVisual)
+    public bool PickUpItem(InventoryItem item, ItemGridUI sourceGrid, RectTransform itemVisual, EquipmentSlotUI sourceSlot = null)
     {
         if (HeldItem != null) return false;
 
         HeldItem = item;
         SourceGrid = sourceGrid;
+        SourceSlot = sourceSlot;
         heldItemVisual = itemVisual;
 
         if (heldItemVisual != null && mainCanvas != null)
         {
             heldItemVisual.SetParent(mainCanvas.transform, true);
-
             heldItemVisual.SetAsLastSibling();
 
             if (heldItemVisual.TryGetComponent<CanvasGroup>(out var canvasGroup))
@@ -120,6 +121,11 @@ public class DragDropManager : MonoBehaviour
                 SourceGrid.GridModel.PlaceItem(HeldItem, fallbackPos.x, fallbackPos.y);
             }
         }
+        else if (SourceSlot != null && EquipmentManager.Instance != null)
+        {
+            EquipmentManager.Instance.Equip(SourceSlot.SlotType, HeldItem, out _);
+            SourceSlot.SyncVisualFromManager();
+        }
 
         ClearHeldItem();
     }
@@ -139,6 +145,7 @@ public class DragDropManager : MonoBehaviour
         InventoryItem droppedItem = HeldItem;
         HeldItem = null;
         SourceGrid = null;
+        SourceSlot = null;
         heldItemVisual = null;
         itemUIController = null;
 
@@ -150,7 +157,6 @@ public class DragDropManager : MonoBehaviour
         if (heldItemVisual == null || mainCanvas == null) return;
 
         Camera uiCamera = mainCanvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : mainCanvas.worldCamera;
-
         Vector2 mousePos = Mouse.current.position.ReadValue();
 
         if (RectTransformUtility.ScreenPointToWorldPointInRectangle(
@@ -160,20 +166,13 @@ public class DragDropManager : MonoBehaviour
             out Vector3 worldPoint))
         {
             heldItemVisual.position = worldPoint;
-            
+
             Vector3 localPos = heldItemVisual.localPosition;
             localPos.z = 0f;
             heldItemVisual.localPosition = localPos;
         }
     }
 
-    private void OnEnable()
-    {
-        rotateAction.Enable();
-    }
-
-    private void OnDisable()
-    {
-        rotateAction.Disable();
-    }
+    private void OnEnable() => rotateAction.Enable();
+    private void OnDisable() => rotateAction.Disable();
 }
