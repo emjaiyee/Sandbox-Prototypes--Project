@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95f0838bfac6e924f8a60d31fb0b2b11, type: 3}
   m_Name: Chestplate
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  equipmentType: 4
+  equipmentType: 3
   itemName: 
   itemDescription: 
   gridSize: {x: 1, y: 1}

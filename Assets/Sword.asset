@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 95f0838bfac6e924f8a60d31fb0b2b11, type: 3}
   m_Name: Sword
   m_EditorClassIdentifier: Assembly-CSharp::ItemData
-  equipmentType: 2
+  equipmentType: 1
   itemName: 
   itemDescription: 
   gridSize: {x: 1, y: 1}
