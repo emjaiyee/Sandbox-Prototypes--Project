@@ -9,7 +9,6 @@ public class EquipmentSlotUI : MonoBehaviour, IPointerClickHandler
     [SerializeField] private EquipmentType slotType;
     [SerializeField] private RectTransform slotRectTransform;
     [SerializeField] private Image slotIconImage;
-    [SerializeField] private GameObject itemUIPrefab;
 
     public InventoryItem EquippedItem { get; private set; }
     public EquipmentType SlotType => slotType;
@@ -102,7 +101,7 @@ public class EquipmentSlotUI : MonoBehaviour, IPointerClickHandler
 
         dragManager.PickUpItem(itemToPickup, null, visualToPickup);
     }
-    
+
     public void UpdateSlotVisual(InventoryItem item)
     {
         if (item != null && item.Data != null)
